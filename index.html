@@ -123,6 +123,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.4)}
     <button class="nav-btn" onclick="setView('tasks')">▣ Tareas</button>
     <button class="nav-btn" onclick="setView('meetings')">◎ Reuniones</button>
     <button class="nav-btn" onclick="setView('agent')">✦ Agente IA</button>
+    <button class="nav-btn" onclick="setView('crm')">◉ CRM</button>
   </nav>
   <div id="user-switcher">
     <span>Vista:</span>
@@ -143,6 +144,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.4)}
 const SUPABASE_URL = 'https://phjiuommgudbwywuumvs.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Oq_4uJ9TVFv6LkQe6Dirdg_P7bUWImT';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const PROXY = 'https://partners-proxy.sasan-a91.workers.dev';
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let state = { projects:[], tasks:[], meetings:[] };
@@ -153,6 +155,9 @@ let agentHistory = [];
 let agentProject = '';
 let filterUser = 'all';
 let filterProject = 'all';
+let crmContacts = [];
+let crmSearch = '';
+let crmLoading = false;
 
 // ── CONSTANTS ─────────────────────────────────────────────────────────────────
 const USERS = ['Sasan','Jorge','Juan'];
@@ -252,7 +257,7 @@ async function dbDeleteTask(id){
 function setView(v){
   currentView=v; selProject=null;
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  const idx={dashboard:0,projects:1,tasks:2,meetings:3,agent:4}[v];
+  const idx={dashboard:0,projects:1,tasks:2,meetings:3,agent:4,crm:5}[v];
   document.querySelectorAll('.nav-btn')[idx]?.classList.add('active');
   render();
 }
@@ -272,6 +277,7 @@ function render(){
   else if(currentView==='tasks') el.innerHTML=renderTasks();
   else if(currentView==='meetings') el.innerHTML=renderMeetings();
   else if(currentView==='agent') el.innerHTML=renderAgent();
+  else if(currentView==='crm'){ el.innerHTML=renderCRM(); if(crmContacts.length===0) loadCRM(); }
   bindEvents();
 }
 
@@ -573,7 +579,7 @@ Si es pregunta: {"modo":"chat","respuesta":"tu respuesta aquí"}
 Español rioplatense, informal pero profesional.`;
 
   try {
-    const res=await fetch('https://partners-proxy.sasan-a91.workers.dev',{
+    const res=await fetch(PROXY,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,system:systemPrompt,messages:agentHistory.map(h=>({role:h.role,content:h.content}))})
@@ -817,6 +823,209 @@ async function saveEditMeeting(id){
   const changes={title,project_id:document.getElementById('em-proj')?.value||null,type:document.getElementById('em-type')?.value,date:document.getElementById('em-date')?.value,external_attendees:document.getElementById('em-ext')?.value||'',notes:document.getElementById('em-notes')?.value||''};
   closeModal();
   await dbUpdateMeeting(id,changes);
+}
+
+
+// ── CRM ───────────────────────────────────────────────────────────────────────
+function notionProp(page, key, type) {
+  const p = page.properties[key];
+  if (!p) return '';
+  if (type === 'title') return p.title?.map(t=>t.plain_text).join('') || '';
+  if (type === 'rich_text') return p.rich_text?.map(t=>t.plain_text).join('') || '';
+  if (type === 'email') return p.email || '';
+  if (type === 'phone') return p.phone_number || '';
+  if (type === 'select') return p.select?.name || '';
+  if (type === 'multi_select') return p.multi_select?.map(s=>s.name).join(', ') || '';
+  if (type === 'checkbox') return p.checkbox ? '✓' : '';
+  if (type === 'date') return p.date?.start || '';
+  return '';
+}
+
+async function loadCRM() {
+  crmLoading = true;
+  render();
+  try {
+    const res = await fetch(PROXY + '/notion/contacts');
+    const data = await res.json();
+    crmContacts = data.results || [];
+  } catch(e) {
+    toast('Error cargando CRM', '#ef4444');
+  }
+  crmLoading = false;
+  render();
+}
+
+function renderCRM() {
+  const filtered = crmContacts.filter(c => {
+    if (!crmSearch) return true;
+    const s = crmSearch.toLowerCase();
+    const name = (notionProp(c,'Name','title') + ' ' + notionProp(c,'Full Name','rich_text') + ' ' + notionProp(c,'Company','rich_text')).toLowerCase();
+    return name.includes(s);
+  });
+
+  return `<div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <div>
+        <h2 style="font-size:20px;font-weight:900;margin:0 0 4px;letter-spacing:-.03em">◉ CRM — Notion</h2>
+        <p style="color:#6b7280;font-size:12px;margin:0">${crmContacts.length} contactos sincronizados</p>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="loadCRM()" class="btn btn-secondary btn-sm">↻ Sincronizar</button>
+        <button onclick="openAddContactModal()" class="btn btn-primary">+ Contacto</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <input id="crm-search" class="inp" placeholder="Buscar por nombre, empresa..." value="${crmSearch}"
+        oninput="crmSearch=this.value;render()" style="max-width:400px">
+    </div>
+
+    ${crmLoading ? '<div style="text-align:center;color:#6b7280;padding:40px;font-size:13px">Cargando contactos...</div>' : ''}
+
+    ${!crmLoading && filtered.length === 0 ? '<div class="card" style="text-align:center;color:#6b7280;padding:32px;font-size:13px">No hay contactos que coincidan.</div>' : ''}
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+      ${filtered.map(c => {
+        const name = notionProp(c,'Name','title') || notionProp(c,'Full Name','rich_text') || '(Sin nombre)';
+        const company = notionProp(c,'Company','rich_text');
+        const position = notionProp(c,'Position','rich_text');
+        const email = notionProp(c,'Email','email');
+        const country = notionProp(c,'Country','rich_text');
+        const status = notionProp(c,'Lead Status','rich_text');
+        const source = notionProp(c,'Lead Source','multi_select');
+        const interest = notionProp(c,'Country of Interest','multi_select');
+        const traveled = notionProp(c,'Traveled With Us','checkbox');
+        const notes = notionProp(c,'Notes','rich_text');
+        const service = notionProp(c,'Servicio contratado','rich_text');
+        return `<div class="card" style="padding:14px;cursor:pointer" onclick="openContactDetail('${c.id}')">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+            <div style="width:36px;height:36px;border-radius:50%;background:#6366f120;border:1.5px solid #6366f140;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#818cf8;flex-shrink:0">${name[0]||'?'}</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">
+              ${traveled==='✓'?'<span style="font-size:10px;background:#10b98118;color:#10b981;border-radius:4px;padding:1px 6px;border:1px solid #10b98128">✈ Viajó</span>':''}
+              ${status?`<span style="font-size:10px;background:#6366f118;color:#818cf8;border-radius:4px;padding:1px 6px;border:1px solid #6366f128">${status}</span>`:''}
+            </div>
+          </div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:2px">${name}</div>
+          ${position?`<div style="font-size:11px;color:#9ca3af">${position}</div>`:''}
+          ${company?`<div style="font-size:11px;color:#6b7280;margin-top:1px">${company}</div>`:''}
+          <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap">
+            ${country?`<span style="font-size:10px;color:#6b7280;background:#1a1a28;border-radius:4px;padding:1px 5px">${country}</span>`:''}
+            ${source?`<span style="font-size:10px;color:#f59e0b;background:#f59e0b18;border-radius:4px;padding:1px 5px;border:1px solid #f59e0b28">${source.split(',')[0]}</span>`:''}
+          </div>
+          ${email?`<div style="font-size:11px;color:#6366f1;margin-top:6px">${email}</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function openContactDetail(id) {
+  const c = crmContacts.find(x => x.id === id);
+  if (!c) return;
+  const name = notionProp(c,'Name','title') || notionProp(c,'Full Name','rich_text') || '(Sin nombre)';
+  const company = notionProp(c,'Company','rich_text');
+  const position = notionProp(c,'Position','rich_text');
+  const email = notionProp(c,'Email','email');
+  const phone = notionProp(c,'Phone','phone');
+  const country = notionProp(c,'Country','rich_text');
+  const status = notionProp(c,'Lead Status','rich_text');
+  const source = notionProp(c,'Lead Source','multi_select');
+  const interest = notionProp(c,'Country of Interest','multi_select');
+  const traveled = notionProp(c,'Traveled With Us','checkbox');
+  const notes = notionProp(c,'Notes','rich_text');
+  const service = notionProp(c,'Servicio contratado','rich_text');
+  const contacted = notionProp(c,'Contacted','rich_text');
+
+  const mc = document.getElementById('modal-container');
+  mc.innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal" style="width:540px">
+      <div class="modal-title">
+        <div>
+          <h3>${name}</h3>
+          ${position?`<div style="font-size:12px;color:#6b7280;margin-top:2px">${position}${company?' · '+company:''}</div>`:''}
+        </div>
+        <button class="close-btn" onclick="closeModal()">×</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        ${email?`<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Email</div><div style="font-size:13px">${email}</div></div>`:''}
+        ${phone?`<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Teléfono</div><div style="font-size:13px">${phone}</div></div>`:''}
+        ${country?`<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">País</div><div style="font-size:13px">${country}</div></div>`:''}
+        ${status?`<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Lead Status</div><div style="font-size:13px">${status}</div></div>`:''}
+        ${source?`<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Fuente</div><div style="font-size:13px">${source}</div></div>`:''}
+        ${interest?`<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Países de interés</div><div style="font-size:13px">${interest}</div></div>`:''}
+        ${service?`<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Servicio</div><div style="font-size:13px">${service}</div></div>`:''}
+        ${traveled==='✓'?`<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Viajó con +Partners</div><div style="font-size:13px;color:#10b981">✓ Sí</div></div>`:''}
+      </div>
+      ${notes?`<div style="background:#13131f;border-radius:8px;padding:12px;margin-bottom:16px"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Notas</div><div style="font-size:13px;line-height:1.6;color:#9ca3af">${notes}</div></div>`:''}
+      ${contacted?`<div style="background:#13131f;border-radius:8px;padding:12px;margin-bottom:16px"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Contactado</div><div style="font-size:13px;color:#9ca3af">${contacted}</div></div>`:''}
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button onclick="window.open('${c.url}','_blank')" class="btn btn-secondary">Abrir en Notion ↗</button>
+        <button onclick="createTaskFromContact('${name.replace(/'/g,"\'")}','${company.replace(/'/g,"\'")}','${id}')" class="btn btn-primary">+ Crear tarea</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function createTaskFromContact(name, company, contactId) {
+  closeModal();
+  openTaskModal(null);
+  setTimeout(() => {
+    const titleEl = document.getElementById('t-title');
+    if (titleEl) titleEl.value = `Follow-up con ${name}${company?' ('+company+')':''}`;
+  }, 100);
+}
+
+function openAddContactModal() {
+  const mc = document.getElementById('modal-container');
+  mc.innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-title"><h3>Nuevo contacto en CRM</h3><button class="close-btn" onclick="closeModal()">×</button></div>
+      <div class="grid2">
+        <div class="field"><label>Nombre *</label><input id="nc-name" class="inp" autofocus placeholder="Juan García"></div>
+        <div class="field"><label>Empresa</label><input id="nc-company" class="inp" placeholder="Banco XYZ"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Cargo</label><input id="nc-position" class="inp" placeholder="CEO"></div>
+        <div class="field"><label>País</label><input id="nc-country" class="inp" placeholder="Argentina"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Email</label><input id="nc-email" class="inp" type="email" placeholder="juan@banco.com"></div>
+        <div class="field"><label>Teléfono</label><input id="nc-phone" class="inp" placeholder="+54 9 11..."></div>
+      </div>
+      <div class="field"><label>Lead Status</label><input id="nc-status" class="inp" placeholder="Prospecto, Contactado, Cliente..."></div>
+      <div class="field"><label>Notas</label><textarea id="nc-notes" class="inp" style="height:64px;resize:none" placeholder="Contexto del contacto..."></textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveNewContact()">Crear en Notion</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function saveNewContact() {
+  const name = document.getElementById('nc-name')?.value.trim();
+  if (!name) return;
+  const properties = {
+    'Name': { title: [{ text: { content: name } }] },
+    'Company': { rich_text: [{ text: { content: document.getElementById('nc-company')?.value||'' } }] },
+    'Position': { rich_text: [{ text: { content: document.getElementById('nc-position')?.value||'' } }] },
+    'Country': { rich_text: [{ text: { content: document.getElementById('nc-country')?.value||'' } }] },
+    'Email': { email: document.getElementById('nc-email')?.value||null },
+    'Phone': { phone_number: document.getElementById('nc-phone')?.value||null },
+    'Lead Status': { rich_text: [{ text: { content: document.getElementById('nc-status')?.value||'' } }] },
+    'Notes': { rich_text: [{ text: { content: document.getElementById('nc-notes')?.value||'' } }] },
+  };
+  closeModal();
+  try {
+    const res = await fetch(PROXY + '/notion/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ properties }),
+    });
+    const data = await res.json();
+    if (data.id) { toast('Contacto creado en Notion'); await loadCRM(); }
+    else toast('Error al crear contacto','#ef4444');
+  } catch(e) { toast('Error: '+e.message,'#ef4444'); }
 }
 
 function closeModal(){ document.getElementById('modal-container').innerHTML=''; }
