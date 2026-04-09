@@ -222,6 +222,32 @@ async function dbAddMeeting(m){
   else toast('Error al guardar reunión','#ef4444');
 }
 
+async function dbUpdateProject(id,ch){
+  const {error}=await sb.from('projects').update(ch).eq('id',id);
+  if(!error){const i=state.projects.findIndex(p=>p.id===id);if(i>=0)Object.assign(state.projects[i],ch);render();toast('Proyecto actualizado');}
+  else toast('Error','#ef4444');
+}
+async function dbDeleteProject(id){
+  await sb.from('tasks').delete().eq('project_id',id);
+  const {error}=await sb.from('projects').delete().eq('id',id);
+  if(!error){state.projects=state.projects.filter(p=>p.id!==id);state.tasks=state.tasks.filter(t=>t.project_id!==id);selProject=null;render();toast('Proyecto eliminado');}
+  else toast('Error','#ef4444');
+}
+async function dbUpdateMeeting(id,ch){
+  const {error}=await sb.from('meetings').update(ch).eq('id',id);
+  if(!error){const i=state.meetings.findIndex(m=>m.id===id);if(i>=0)Object.assign(state.meetings[i],ch);render();toast('Reunión actualizada');}
+  else toast('Error','#ef4444');
+}
+async function dbDeleteMeeting(id){
+  const {error}=await sb.from('meetings').delete().eq('id',id);
+  if(!error){state.meetings=state.meetings.filter(m=>m.id!==id);render();toast('Reunión eliminada');}
+  else toast('Error','#ef4444');
+}
+async function dbDeleteTask(id){
+  const {error}=await sb.from('tasks').delete().eq('id',id);
+  if(!error){state.tasks=state.tasks.filter(t=>t.id!==id);render();toast('Tarea eliminada');}
+  else toast('Error','#ef4444');
+}
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
 function setView(v){
   currentView=v; selProject=null;
@@ -272,7 +298,7 @@ function taskCardHTML(t, compact=false){
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
       ${av(t.assignee,22)}
-      ${!compact?`<select onchange="changeTaskStatus('${t.id}',this.value)" style="background:#1a1a28;border:1px solid #252540;border-radius:5px;color:${TASK_STATUS_COLORS[t.status]};font-size:10px;padding:2px 5px;cursor:pointer;font-family:inherit">${TASK_STATUSES.map(s=>`<option value="${s}"${t.status===s?' selected':''}>${s}</option>`).join('')}</select>`:''}
+      ${!compact?`<div style='display:flex;gap:4px;margin-top:2px'><button onclick="openEditTaskModal('${t.id}')" style='background:#1a1a28;border:1px solid #252540;border-radius:4px;color:#9ca3af;font-size:10px;padding:2px 6px;cursor:pointer'>✏</button><button onclick="if(confirm('¿Eliminar?'))dbDeleteTask('${t.id}')" style='background:#ef444415;border:1px solid #ef444430;border-radius:4px;color:#ef4444;font-size:10px;padding:2px 6px;cursor:pointer'>✕</button></div>`:''}      ${!compact?`<select onchange="changeTaskStatus('${t.id}',this.value)" style="background:#1a1a28;border:1px solid #252540;border-radius:5px;color:${TASK_STATUS_COLORS[t.status]};font-size:10px;padding:2px 5px;cursor:pointer;font-family:inherit">${TASK_STATUSES.map(s=>`<option value="${s}"${t.status===s?' selected':''}>${s}</option>`).join('')}</select>`:''}
     </div>
   </div>`;
 }
@@ -325,7 +351,7 @@ function renderDashboard(){
                   <div style="font-size:13px;font-weight:600;line-height:1.3">${p.name}</div>
                   ${av(p.responsible,20)}
                 </div>
-                <div style="display:flex;gap:5px;margin-bottom:${pt.length>0?'8px':'0'}">${pill(p.country)}${p.sme?pill('SME: '+p.sme.split(' ')[0],'#a78bfa'):''}</div>
+                <div style="display:flex;gap:5px;margin-bottom:${pt.length>0?'8px':'0'}">${pill(p.country)}${p.sme?(p.sme.includes(',')?p.sme.split(',').map(s=>pill('SME: '+s.trim().split(' ')[0],'#a78bfa')).join(''):pill('SME: '+p.sme.split(' ')[0],'#a78bfa')):''}</div>
                 ${pt.length>0?bar((dn/pt.length)*100,'#6366f1')+`<div style="font-size:10px;color:#6b7280;margin-top:4px">${dn}/${pt.length} tareas</div>`:''}
               </div>`;
             }).join('')}
@@ -364,13 +390,13 @@ function renderProjects(){
           const pnd=pt.filter(t=>t.status!=='completada').length;
           const isSel=selProject===p.id;
           return `<div onclick="toggleProject('${p.id}')" style="background:${isSel?'#6366f10c':'#0c0c18'};border:1px solid ${isSel?'#6366f150':'#1a1a2e'};border-radius:11px;padding:16px;cursor:pointer;transition:all .2s">
-            <div style="display:flex;justify-content:space-between;margin-bottom:10px">${chip(status,STATUS_COLORS[status])}${av(p.responsible,24)}</div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px">${chip(status,STATUS_COLORS[status])}<div style="display:flex;gap:5px;align-items:center"><button onclick="event.stopPropagation();openEditProjectModal('${p.id}')" style="background:#1a1a28;border:1px solid #252540;border-radius:4px;color:#9ca3af;font-size:10px;padding:2px 7px;cursor:pointer">✏</button><button onclick="event.stopPropagation();if(confirm('¿Eliminar proyecto y sus tareas?'))dbDeleteProject('${p.id}')" style="background:#ef444415;border:1px solid #ef444430;border-radius:4px;color:#ef4444;font-size:10px;padding:2px 7px;cursor:pointer">✕</button>${av(p.responsible,24)}</div></div>
             <div style="font-size:14px;font-weight:800;margin-bottom:4px;letter-spacing:-.02em">${p.name}</div>
             <div style="font-size:11px;color:#6b7280;margin-bottom:10px;line-height:1.5">${p.description||''}</div>
             <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">
               ${pill(p.country)}
               ${p.pm&&p.pm!==p.responsible?pill('PM: '+p.pm.split(' ')[0],'#38bdf8'):''}
-              ${p.sme?pill('SME: '+p.sme.split(' ')[0],'#a78bfa'):''}
+              ${p.sme?(p.sme.includes(',')?p.sme.split(',').map(s=>pill('SME: '+s.trim().split(' ')[0],'#a78bfa')).join(''):pill('SME: '+p.sme.split(' ')[0],'#a78bfa')):''}
             </div>
             ${pt.length>0?bar((dn/pt.length)*100,STATUS_COLORS[status])+`<div style="font-size:10px;color:#6b7280;margin-top:4px">${pnd} pend · ${dn} ok</div>`:''}
           </div>`;
@@ -472,8 +498,8 @@ function renderMeetings(){
           </div>
           ${m.external_attendees?`<div style="font-size:11px;color:#6b7280;margin-bottom:8px">Externos: ${m.external_attendees}</div>`:''}
           ${m.notes?`<div style="font-size:12px;color:#9ca3af;line-height:1.6;background:#13131f;border-radius:7px;padding:10px 12px;margin-bottom:10px">${m.notes}</div>`:''}
-          <div style="display:flex;justify-content:flex-end">
-            <button onclick="sendToAgent('${m.notes?.replace(/'/g,"\\'")||m.title}','${m.project_id||''}')" style="background:#6366f115;border:1px solid #6366f130;border-radius:6px;color:#a5b4fc;font-size:11px;font-weight:600;padding:5px 12px;cursor:pointer;font-family:inherit">✦ Extraer tareas con IA →</button>
+          <div style="display:flex;justify-content:space-between;align-items:center"><div style="display:flex;gap:6px"><button onclick="openEditMeetingModal('${m.id}')" style="background:#1a1a28;border:1px solid #252540;border-radius:5px;color:#9ca3af;font-size:11px;padding:5px 10px;cursor:pointer;font-family:inherit">✏ Editar</button><button onclick="if(confirm('¿Eliminar reunión?'))dbDeleteMeeting('${m.id}')" style="background:#ef444415;border:1px solid #ef444430;border-radius:5px;color:#ef4444;font-size:11px;padding:5px 10px;cursor:pointer;font-family:inherit">✕</button></div>
+            <button onclick="sendToAgent('${m.notes?.replace(/'/g,"\\'")||m.title}','${m.project_id||''}')" style="background:#6366f115;border:1px solid #6366f130;border-radius:6px;color:#a5b4fc;font-size:11px;font-weight:600;padding:5px 12px;cursor:pointer;font-family:inherit">✦ Extraer tareas con IA →</button></div>
           </div>
         </div>`;
       }).join('')}
@@ -627,7 +653,7 @@ function openProjectModal(){
       <div class="grid3">
         <div class="field"><label>Responsable</label><select id="p-resp" class="inp">${USERS.map(u=>`<option${u===currentUser?' selected':''}>${u}</option>`).join('')}</select></div>
         <div class="field"><label>PM (opcional)</label><input id="p-pm" class="inp" placeholder="Nombre"></div>
-        <div class="field"><label>SME (opcional)</label><input id="p-sme" class="inp" placeholder="Nombre"></div>
+        <div class="field"><label>SMEs (coma para varios)</label><input id="p-sme" class="inp" placeholder="Hugo Patiño, Daniel Torres"></div>
       </div>
       <div class="field"><label>Descripción</label><textarea id="p-desc" class="inp" style="height:72px;resize:none"></textarea></div>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
@@ -690,6 +716,107 @@ async function saveMeeting(){
   const meeting={id:uid(),title,project_id:document.getElementById('m-proj')?.value||null,type:document.getElementById('m-type')?.value,date:document.getElementById('m-date')?.value,attendees:window._meetingAttendees||[currentUser],external_attendees:document.getElementById('m-ext')?.value||'',notes:document.getElementById('m-notes')?.value||'',tasks_generated:[],created_at:new Date().toISOString()};
   closeModal();
   await dbAddMeeting(meeting);
+}
+
+
+function openEditTaskModal(id){
+  const t=state.tasks.find(x=>x.id===id);
+  if(!t) return;
+  const mc=document.getElementById('modal-container');
+  mc.innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-title"><h3>Editar tarea</h3><button class="close-btn" onclick="closeModal()">×</button></div>
+      <div class="field"><label>Título *</label><input id="et-title" class="inp" value="${t.title}" autofocus></div>
+      <div class="field"><label>Proyecto</label><select id="et-proj" class="inp"><option value="">Sin proyecto</option>${state.projects.map(p=>`<option value="${p.id}"${p.id===t.project_id?' selected':''}>${p.name}</option>`).join('')}</select></div>
+      <div class="grid3">
+        <div class="field"><label>Responsable</label><select id="et-assignee" class="inp">${USERS.map(u=>`<option value="${u}"${u===t.assignee?' selected':''}>${u}</option>`).join('')}</select></div>
+        <div class="field"><label>Prioridad</label><select id="et-priority" class="inp">${PRIORITIES.map(p=>`<option value="${p}"${p===t.priority?' selected':''}>${p}</option>`).join('')}</select></div>
+        <div class="field"><label>Vencimiento</label><input type="date" id="et-due" class="inp" value="${t.due_date||''}"></div>
+      </div>
+      <div class="field"><label>Estado</label><select id="et-status" class="inp">${TASK_STATUSES.map(s=>`<option value="${s}"${s===t.status?' selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="field"><label>Notas</label><textarea id="et-notes" class="inp" style="height:64px;resize:none">${t.notes||''}</textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveEditTask('${id}')">Guardar</button>
+      </div>
+    </div>
+  </div>`;
+}
+async function saveEditTask(id){
+  const title=document.getElementById('et-title')?.value.trim();
+  if(!title) return;
+  const changes={title,project_id:document.getElementById('et-proj')?.value||null,assignee:document.getElementById('et-assignee')?.value,priority:document.getElementById('et-priority')?.value,due_date:document.getElementById('et-due')?.value||null,notes:document.getElementById('et-notes')?.value||'',status:document.getElementById('et-status')?.value};
+  closeModal();
+  await dbUpdateTask(id,changes);
+}
+
+function openEditProjectModal(id){
+  const p=state.projects.find(x=>x.id===id);
+  if(!p) return;
+  const smeVal=Array.isArray(p.sme)?p.sme.join(', '):(p.sme||'');
+  const mc=document.getElementById('modal-container');
+  mc.innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-title"><h3>Editar proyecto</h3><button class="close-btn" onclick="closeModal()">×</button></div>
+      <div class="grid2">
+        <div class="field"><label>Nombre *</label><input id="ep-name" class="inp" value="${p.name}" autofocus></div>
+        <div class="field"><label>Cliente</label><input id="ep-client" class="inp" value="${p.client||''}"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>País / Región</label><input id="ep-country" class="inp" value="${p.country||''}"></div>
+        <div class="field"><label>Estado</label><select id="ep-status" class="inp">${STATUSES.map(s=>`<option value="${s}"${s===p.status?' selected':''}>${s}</option>`).join('')}</select></div>
+      </div>
+      <div class="grid3">
+        <div class="field"><label>Responsable</label><select id="ep-resp" class="inp">${USERS.map(u=>`<option value="${u}"${u===p.responsible?' selected':''}>${u}</option>`).join('')}</select></div>
+        <div class="field"><label>PM</label><input id="ep-pm" class="inp" value="${p.pm||''}"></div>
+        <div class="field"><label>SMEs (coma para varios)</label><input id="ep-sme" class="inp" value="${smeVal}" placeholder="Hugo Patiño, Daniel Torres"></div>
+      </div>
+      <div class="field"><label>Descripción</label><textarea id="ep-desc" class="inp" style="height:72px;resize:none">${p.description||''}</textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveEditProject('${id}')">Guardar</button>
+      </div>
+    </div>
+  </div>`;
+}
+async function saveEditProject(id){
+  const name=document.getElementById('ep-name')?.value.trim();
+  if(!name) return;
+  const smeRaw=document.getElementById('ep-sme')?.value||'';
+  const sme=smeRaw.includes(',')?smeRaw.split(',').map(s=>s.trim()).filter(Boolean):smeRaw.trim()||null;
+  const changes={name,client:document.getElementById('ep-client')?.value||'',status:document.getElementById('ep-status')?.value,responsible:document.getElementById('ep-resp')?.value,pm:document.getElementById('ep-pm')?.value||null,sme,country:document.getElementById('ep-country')?.value||'',description:document.getElementById('ep-desc')?.value||''};
+  closeModal();
+  await dbUpdateProject(id,changes);
+}
+
+function openEditMeetingModal(id){
+  const m=state.meetings.find(x=>x.id===id);
+  if(!m) return;
+  const mc=document.getElementById('modal-container');
+  mc.innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal" style="width:540px">
+      <div class="modal-title"><h3>Editar reunión</h3><button class="close-btn" onclick="closeModal()">×</button></div>
+      <div class="field"><label>Título *</label><input id="em-title" class="inp" value="${m.title}" autofocus></div>
+      <div class="grid3">
+        <div class="field"><label>Proyecto</label><select id="em-proj" class="inp"><option value="">General</option>${state.projects.map(p=>`<option value="${p.id}"${p.id===m.project_id?' selected':''}>${p.name}</option>`).join('')}</select></div>
+        <div class="field"><label>Tipo</label><select id="em-type" class="inp">${MEETING_TYPES.map(t=>`<option value="${t}"${t===m.type?' selected':''}>${t}</option>`).join('')}</select></div>
+        <div class="field"><label>Fecha</label><input type="date" id="em-date" class="inp" value="${m.date||''}"></div>
+      </div>
+      <div class="field"><label>Externos</label><input id="em-ext" class="inp" value="${m.external_attendees||''}"></div>
+      <div class="field"><label>Notas</label><textarea id="em-notes" class="inp" style="height:100px;resize:vertical">${m.notes||''}</textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveEditMeeting('${id}')">Guardar</button>
+      </div>
+    </div>
+  </div>`;
+}
+async function saveEditMeeting(id){
+  const title=document.getElementById('em-title')?.value.trim();
+  if(!title) return;
+  const changes={title,project_id:document.getElementById('em-proj')?.value||null,type:document.getElementById('em-type')?.value,date:document.getElementById('em-date')?.value,external_attendees:document.getElementById('em-ext')?.value||'',notes:document.getElementById('em-notes')?.value||''};
+  closeModal();
+  await dbUpdateMeeting(id,changes);
 }
 
 function closeModal(){ document.getElementById('modal-container').innerHTML=''; }
