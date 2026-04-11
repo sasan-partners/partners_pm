@@ -89,13 +89,13 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.4)}
 <div id="header">
   <div id="logo"><span>+</span>Partners PM</div>
   <nav id="nav">
-    <button class="nav-btn active" onclick="setView('dashboard')">⬡ Inicio</button>
-    <button class="nav-btn" onclick="setView('projects')">◈ Proyectos</button>
-    <button class="nav-btn" onclick="setView('tasks')">▣ Tareas</button>
-    <button class="nav-btn" onclick="setView('meetings')">◎ Reuniones</button>
-    <button class="nav-btn" onclick="setView('agent')">✦ Agente IA</button>
-    <button class="nav-btn" onclick="setView('crm')">◉ CRM</button>
-    <button class="nav-btn" onclick="setView('match')">⟡ Match</button>
+    <button class="nav-btn active" onclick="setView('dashboard')">&#x2B21; Inicio</button>
+    <button class="nav-btn" onclick="setView('projects')">&#x25C8; Proyectos</button>
+    <button class="nav-btn" onclick="setView('tasks')">&#x25A3; Tareas</button>
+    <button class="nav-btn" onclick="setView('meetings')">&#x25CE; Reuniones</button>
+    <button class="nav-btn" onclick="setView('agent')">&#x2726; Agente IA</button>
+    <button class="nav-btn" onclick="setView('crm')">&#x25C9; CRM</button>
+    <button class="nav-btn" onclick="setView('match')">&#x27E1; Match</button>
   </nav>
   <div id="user-switcher">
     <span>Vista:</span>
@@ -269,7 +269,7 @@ function taskCardHTML(t,compact){
   const overdue=days!==null&&days<0&&!done;
   return '<div class="task-card'+(overdue?' overdue':'')+(done?' done':'')+'" data-id="'+t.id+'">'+
     '<button class="checkbox'+(done?' checked':'')+'" onclick="toggleTask(\''+t.id+'\',\''+t.status+'\')" style="'+(done?'':'border-color:#374151')+'">'+
-    (done?'<span style="font-size:9px;color:#fff;line-height:1">✓</span>':'')+
+    (done?'<span style="font-size:9px;color:#fff;line-height:1">&#x2713;</span>':'')+
     '</button>'+
     '<div style="flex:1;min-width:0">'+
     '<div style="font-size:13px;font-weight:500;color:'+(done?'#6b7280':'#e8e8f0')+';text-decoration:'+(done?'line-through':'none')+';line-height:1.4">'+t.title+'</div>'+
@@ -281,7 +281,7 @@ function taskCardHTML(t,compact){
     '</div></div>'+
     '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">'+
     av(t.assignee,22)+
-    (!compact?'<div style="display:flex;gap:4px"><button onclick="openEditTaskModal(\''+t.id+'\')" style="background:#1a1a28;border:1px solid #252540;border-radius:4px;color:#9ca3af;font-size:10px;padding:2px 6px;cursor:pointer">✏</button><button onclick="if(confirm(\'Eliminar?\'))dbDeleteTask(\''+t.id+'\')" style="background:#ef444415;border:1px solid #ef444430;border-radius:4px;color:#ef4444;font-size:10px;padding:2px 6px;cursor:pointer">✕</button></div>':'')+
+    (!compact?'<div style="display:flex;gap:4px"><button onclick="openEditTaskModal(\''+t.id+'\')" style="background:#1a1a28;border:1px solid #252540;border-radius:4px;color:#9ca3af;font-size:10px;padding:2px 6px;cursor:pointer">&#x270F;</button><button onclick="if(confirm(\'Eliminar?\'))dbDeleteTask(\''+t.id+'\')" style="background:#ef444415;border:1px solid #ef444430;border-radius:4px;color:#ef4444;font-size:10px;padding:2px 6px;cursor:pointer">&#x2715;</button></div>':'')+
     (!compact?'<select onchange="changeTaskStatus(\''+t.id+'\',this.value)" style="background:#1a1a28;border:1px solid #252540;border-radius:5px;color:'+TASK_STATUS_COLORS[t.status]+';font-size:10px;padding:2px 5px;cursor:pointer;font-family:inherit">'+TASK_STATUSES.map(function(s){ return '<option value="'+s+'"'+(t.status===s?' selected':'')+'>'+s+'</option>'; }).join('')+'</select>':'')+
     '</div></div>';
 }
@@ -292,10 +292,10 @@ function renderDashboard(){
   const soon=myTasks.filter(function(t){ return t.due_date&&daysUntil(t.due_date)>=0&&daysUntil(t.due_date)<=5; });
   const active=state.projects.filter(function(p){ return p.status==='ejecución'; });
   return '<div>'+
-    '<div style="margin-bottom:24px"><h1 style="font-size:24px;font-weight:900;margin:0 0 4px;letter-spacing:-.04em">Hola, '+currentUser+' 👋</h1>'+
+    '<div style="margin-bottom:24px"><h1 style="font-size:24px;font-weight:900;margin:0 0 4px;letter-spacing:-.04em">Hola, '+currentUser+' &#x1F44B;</h1>'+
     '<p style="color:#6b7280;font-size:13px;margin:0">'+new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'</p></div>'+
-    (overdue.length?'<div class="alert alert-red">⚠️ Tenés <b>'+overdue.length+'</b> tarea'+(overdue.length>1?'s':'')+' vencida'+(overdue.length>1?'s':'')+': <span style="opacity:.8">'+overdue.map(function(t){ return t.title; }).join(' · ')+'</span></div>':'')+
-    (soon.length?'<div class="alert alert-orange">⏱ <b>'+soon.length+'</b> tarea'+(soon.length>1?'s':'')+' vence'+(soon.length>1?'n':'')+' en los próximos 5 días</div>':'')+
+    (overdue.length?'<div class="alert alert-red">&#x26A0; Tenés <b>'+overdue.length+'</b> tarea'+(overdue.length>1?'s':'')+' vencida'+(overdue.length>1?'s':'')+': <span style="opacity:.8">'+overdue.map(function(t){ return t.title; }).join(' · ')+'</span></div>':'')+
+    (soon.length?'<div class="alert alert-orange">&#x23F1; <b>'+soon.length+'</b> tarea'+(soon.length>1?'s':'')+' vence'+(soon.length>1?'n':'')+' en los próximos 5 días</div>':'')+
     '<div class="stats-grid">'+
     '<div class="stat"><div class="stat-value" style="color:#818cf8">'+myTasks.length+'</div><div class="stat-label">Mis pendientes</div></div>'+
     '<div class="stat"><div class="stat-value" style="color:#38bdf8">'+active.length+'</div><div class="stat-label">Proyectos activos</div></div>'+
@@ -308,7 +308,7 @@ function renderDashboard(){
     '<div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.08em">Mis tareas — '+currentUser+'</div>'+
     '<button class="btn btn-sm btn-primary" onclick="openTaskModal()">+ Agregar</button></div>'+
     '<div style="display:flex;flex-direction:column;gap:7px">'+
-    (myTasks.length===0?'<div class="card" style="text-align:center;color:#6b7280;font-size:13px;padding:20px">Sin pendientes 🎉</div>':'')+
+    (myTasks.length===0?'<div class="card" style="text-align:center;color:#6b7280;font-size:13px;padding:20px">Sin pendientes &#x1F389;</div>':'')+
     myTasks.slice(0,7).map(function(t){ return taskCardHTML(t,true); }).join('')+
     (myTasks.length>7?'<button class="btn btn-secondary" onclick="setView(\'tasks\')" style="width:100%;border-radius:9px;border:1px dashed #1e1e2e;background:transparent">Ver '+(myTasks.length-7)+' más →</button>':'')+
     '</div></div>'+
@@ -329,7 +329,7 @@ function renderDashboard(){
     }).join('')+
     '</div></div>'+
     '<div style="background:#6366f110;border:1px solid #6366f130;border-radius:11px;padding:16px">'+
-    '<div style="font-size:13px;font-weight:700;color:#a5b4fc;margin-bottom:4px">⟡ Match Engine</div>'+
+    '<div style="font-size:13px;font-weight:700;color:#a5b4fc;margin-bottom:4px">&#x27E1; Match Engine</div>'+
     '<div style="font-size:12px;color:#818cf8;line-height:1.5;margin-bottom:10px">Describí una necesidad de cliente y encontramos quién puede resolverla en tu base de contactos.</div>'+
     '<button class="btn btn-primary" onclick="setView(\'match\')" style="width:100%;border-radius:7px">Buscar match →</button>'+
     '</div>'+
@@ -356,8 +356,8 @@ function renderProjects(){
         return '<div onclick="toggleProject(\''+p.id+'\')" style="background:'+(isSel?'#6366f10c':'#0c0c18')+';border:1px solid '+(isSel?'#6366f150':'#1a1a2e')+';border-radius:11px;padding:16px;cursor:pointer;transition:all .2s">'+
           '<div style="display:flex;justify-content:space-between;margin-bottom:10px">'+chip(status,STATUS_COLORS[status])+
           '<div style="display:flex;gap:5px;align-items:center">'+
-          '<button onclick="event.stopPropagation();openEditProjectModal(\''+p.id+'\')" style="background:#1a1a28;border:1px solid #252540;border-radius:4px;color:#9ca3af;font-size:10px;padding:2px 7px;cursor:pointer">✏</button>'+
-          '<button onclick="event.stopPropagation();if(confirm(\'Eliminar proyecto y sus tareas?\'))dbDeleteProject(\''+p.id+'\')" style="background:#ef444415;border:1px solid #ef444430;border-radius:4px;color:#ef4444;font-size:10px;padding:2px 7px;cursor:pointer">✕</button>'+
+          '<button onclick="event.stopPropagation();openEditProjectModal(\''+p.id+'\')" style="background:#1a1a28;border:1px solid #252540;border-radius:4px;color:#9ca3af;font-size:10px;padding:2px 7px;cursor:pointer">&#x270F;</button>'+
+          '<button onclick="event.stopPropagation();if(confirm(\'Eliminar proyecto y sus tareas?\'))dbDeleteProject(\''+p.id+'\')" style="background:#ef444415;border:1px solid #ef444430;border-radius:4px;color:#ef4444;font-size:10px;padding:2px 7px;cursor:pointer">&#x2715;</button>'+
           av(p.responsible,24)+'</div></div>'+
           '<div style="font-size:14px;font-weight:800;margin-bottom:4px;letter-spacing:-.02em">'+p.name+'</div>'+
           '<div style="font-size:11px;color:#6b7280;margin-bottom:10px;line-height:1.5">'+(p.description||'')+'</div>'+
@@ -451,9 +451,9 @@ function renderMeetings(){
         (m.notes?'<div style="font-size:12px;color:#9ca3af;line-height:1.6;background:#13131f;border-radius:7px;padding:10px 12px;margin-bottom:10px">'+m.notes+'</div>':'')+
         '<div style="display:flex;justify-content:space-between;align-items:center">'+
         '<div style="display:flex;gap:6px">'+
-        '<button onclick="openEditMeetingModal(\''+m.id+'\')" style="background:#1a1a28;border:1px solid #252540;border-radius:5px;color:#9ca3af;font-size:11px;padding:5px 10px;cursor:pointer;font-family:inherit">✏ Editar</button>'+
-        '<button onclick="if(confirm(\'Eliminar reunión?\'))dbDeleteMeeting(\''+m.id+'\')" style="background:#ef444415;border:1px solid #ef444430;border-radius:5px;color:#ef4444;font-size:11px;padding:5px 10px;cursor:pointer;font-family:inherit">✕</button></div>'+
-        '<button onclick="sendToAgent(\''+encodeURIComponent(m.notes||m.title)+'\',\''+( m.project_id||'')+'\',true)" style="background:#6366f115;border:1px solid #6366f130;border-radius:6px;color:#a5b4fc;font-size:11px;font-weight:600;padding:5px 12px;cursor:pointer;font-family:inherit">✦ Extraer tareas con IA →</button></div>'+
+        '<button onclick="openEditMeetingModal(\''+m.id+'\')" style="background:#1a1a28;border:1px solid #252540;border-radius:5px;color:#9ca3af;font-size:11px;padding:5px 10px;cursor:pointer;font-family:inherit">&#x270F; Editar</button>'+
+        '<button onclick="if(confirm(\'Eliminar reunión?\'))dbDeleteMeeting(\''+m.id+'\')" style="background:#ef444415;border:1px solid #ef444430;border-radius:5px;color:#ef4444;font-size:11px;padding:5px 10px;cursor:pointer;font-family:inherit">&#x2715;</button></div>'+
+        '<button onclick="sendToAgent(\''+encodeURIComponent(m.notes||m.title)+'\',\''+( m.project_id||'')+'\',true)" style="background:#6366f115;border:1px solid #6366f130;border-radius:6px;color:#a5b4fc;font-size:11px;font-weight:600;padding:5px 12px;cursor:pointer;font-family:inherit">&#x2726; Extraer tareas con IA →</button></div>'+
         '</div>';
     }).join('')+'</div></div>';
 }
@@ -462,7 +462,7 @@ function renderAgent(){
   const quickPrompts=['¿Qué tareas urgentes tengo hoy?','¿Qué proyectos no tuvieron movimiento reciente?','Resumime el estado de todos los proyectos','¿Cuál es el próximo paso con Bantotal?','¿Qué tiene pendiente Jorge?'];
   return '<div style="display:flex;flex-direction:column;height:calc(100vh - 120px)">'+
     '<div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start">'+
-    '<div><h2 style="font-size:20px;font-weight:900;margin:0 0 4px;letter-spacing:-.03em">✦ Agente IA</h2>'+
+    '<div><h2 style="font-size:20px;font-weight:900;margin:0 0 4px;letter-spacing:-.03em">&#x2726; Agente IA</h2>'+
     '<p style="color:#6b7280;font-size:12px;margin:0;line-height:1.5">Pegá notas o transcripciones → extraigo tareas automáticamente.<br>O preguntame sobre proyectos y pendientes.</p></div>'+
     '<div style="display:flex;gap:8px;align-items:center">'+
     '<span style="font-size:11px;color:#6b7280">Proyecto:</span>'+
@@ -477,7 +477,7 @@ function renderAgent(){
     '<div id="agent-messages">'+
     agentHistory.map(function(msg){
       if(msg.role==='user') return '<div class="msg-user"><div class="msg-bubble user">'+msg.content+'</div></div>';
-      return '<div class="msg-ai"><div class="ai-icon">✦</div><div class="msg-bubble ai">'+msg.content+'</div></div>';
+      return '<div class="msg-ai"><div class="ai-icon">&#x2726;</div><div class="msg-bubble ai">'+msg.content+'</div></div>';
     }).join('')+
     '<div id="agent-bottom"></div></div>'+
     '<div style="display:flex;gap:8px;align-items:flex-end">'+
@@ -500,7 +500,7 @@ return ‘<div>’+
 ‘<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">’+
 ‘<div style="font-size:13px;font-weight:700;color:#a5b4fc">Base de conocimiento</div>’+
 ‘<button onclick="startSync()" class="btn btn-secondary btn-sm" id="sync-btn">’+
-(syncProgress?‘Sincronizando…’:‘↻ Sincronizar contactos’)+
+(syncProgress?‘Sincronizando…’:’↻ Sincronizar contactos’)+
 ‘</button></div>’+
 (syncProgress?’<div style="background:#6366f118;border-radius:8px;padding:10px 12px;font-size:12px;color:#818cf8">’+syncProgress+’</div>’:
 ‘<div style="font-size:12px;color:#6b7280">Sincronizá tus contactos de Notion para poder hacer búsquedas semánticas. Solo necesitás hacerlo una vez (y cuando agregues contactos nuevos).</div>’)+
@@ -510,7 +510,7 @@ return ‘<div>’+
 ‘<textarea id="match-input" class="inp" style="height:100px;resize:none;line-height:1.6" placeholder="Ej: Cliente banco mediano en Argentina necesita una solución de onboarding digital con validación de identidad...">’+matchQuery+’</textarea>’+
 ‘<div style="display:flex;gap:8px;margin-top:10px">’+
 ‘<button onclick="runMatch()" class="btn btn-primary" style="flex:1" id="match-btn">’+
-(matchLoading?‘Buscando matches…’:‘⟡ Buscar match’)+
+(matchLoading?‘Buscando matches…’:’⟡ Buscar match’)+
 ‘</button>’+
 ‘<button onclick="pasteFromMeeting()" class="btn btn-secondary">Pegar desde reunión</button>’+
 ‘</div></div>’+
@@ -589,7 +589,7 @@ setTimeout(function(){ const el=document.getElementById(‘match-input’); if(e
 async function sendFeedback(id,positive,currentScore){
 try {
 await fetch(PROXY+’/feedback’,{method:‘POST’,headers:{‘Content-Type’:‘application/json’},body:JSON.stringify({id:id,positive:positive,current_score:currentScore||0})});
-toast(positive?‘✓ Match marcado como bueno’:‘✓ Feedback registrado’, positive?’#10b981’:’#6b7280’);
+toast(positive?’✓ Match marcado como bueno’:’✓ Feedback registrado’, positive?’#10b981’:’#6b7280’);
 } catch(e){ toast(‘Error’,’#ef4444’); }
 }
 
@@ -682,7 +682,7 @@ if(type===‘email’) return p.email||’’;
 if(type===‘phone’) return p.phone_number||’’;
 if(type===‘select’) return p.select?p.select.name:’’;
 if(type===‘multi_select’) return (p.multi_select||[]).map(function(s){ return s.name; }).join(’, ‘);
-if(type===‘checkbox’) return p.checkbox?‘✓’:’’;
+if(type===‘checkbox’) return p.checkbox?’✓’:’’;
 return ‘’;
 }
 
@@ -727,7 +727,7 @@ return ‘<div class="card" style="padding:14px;cursor:pointer" onclick="openCon
 ‘<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">’+
 ‘<div style="width:36px;height:36px;border-radius:50%;background:#6366f120;border:1.5px solid #6366f140;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#818cf8;flex-shrink:0">’+(name[0]||’?’)+’</div>’+
 ‘<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">’+
-(traveled===‘✓’?’<span style="font-size:10px;background:#10b98118;color:#10b981;border-radius:4px;padding:1px 6px;border:1px solid #10b98128">✈ Viajó</span>’:’’)+
+(traveled===’✓’?’<span style="font-size:10px;background:#10b98118;color:#10b981;border-radius:4px;padding:1px 6px;border:1px solid #10b98128">✈ Viajó</span>’:’’)+
 (status?’<span style="font-size:10px;background:#6366f118;color:#818cf8;border-radius:4px;padding:1px 6px;border:1px solid #6366f128">’+status+’</span>’:’’)+
 ‘</div></div>’+
 ‘<div style="font-size:13px;font-weight:700;margin-bottom:2px">’+name+’</div>’+
@@ -771,7 +771,7 @@ mc.innerHTML=’<div class="modal-overlay" onclick="if(event.target===this)close
 (source?’<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Fuente</div><div style="font-size:13px">’+source+’</div></div>’:’’)+
 (interest?’<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Países de interés</div><div style="font-size:13px">’+interest+’</div></div>’:’’)+
 (service?’<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Servicio</div><div style="font-size:13px">’+service+’</div></div>’:’’)+
-(traveled===‘✓’?’<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Viajó con +Partners</div><div style="font-size:13px;color:#10b981">✓ Sí</div></div>’:’’)+
+(traveled===’✓’?’<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Viajó con +Partners</div><div style="font-size:13px;color:#10b981">✓ Sí</div></div>’:’’)+
 ‘</div>’+
 (notes?’<div style="background:#13131f;border-radius:8px;padding:12px;margin-bottom:16px"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Notas</div><div style="font-size:13px;line-height:1.6;color:#9ca3af">’+notes+’</div></div>’:’’)+
 ‘<div style="display:flex;gap:8px;justify-content:flex-end">’+
