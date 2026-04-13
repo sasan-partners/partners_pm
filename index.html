@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
@@ -482,591 +481,586 @@ function renderAgent(){
     '<div id="agent-bottom"></div></div>'+
     '<div style="display:flex;gap:8px;align-items:flex-end">'+
     '<textarea id="agent-input" placeholder="Pegá notas de reunión o hacé una pregunta... (Enter = enviar · Shift+Enter = nueva línea)" class="inp" style="flex:1;height:80px;resize:none;line-height:1.5"></textarea>'+
-
-```
-'<button id="agent-send-btn" onclick="submitAgentFromInput()" class="btn btn-primary" style="height:80px;padding:0 22px;border-radius:9px;font-size:13px;flex-shrink:0">Enviar</button>'+
-'</div></div>';
-```
-
+    '<button id="agent-send-btn" onclick="submitAgentFromInput()" class="btn btn-primary" style="height:80px;padding:0 22px;border-radius:9px;font-size:13px;flex-shrink:0">Enviar</button>'+
+    '</div></div>';
 }
 
 function renderMatch(){
-return ‘<div>’+
-‘<div style="margin-bottom:24px">’+
-‘<h2 style="font-size:20px;font-weight:900;margin:0 0 4px;letter-spacing:-.03em">⟡ Match Engine</h2>’+
-‘<p style="color:#6b7280;font-size:13px;margin:0">Describí una necesidad de un cliente y encontramos quién en tu red puede resolverla.</p>’+
-‘</div>’+
-‘<div style="background:#0c0c18;border:1px solid #1a1a2e;border-radius:11px;padding:20px;margin-bottom:24px">’+
-‘<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">’+
-‘<div style="font-size:13px;font-weight:700;color:#a5b4fc">Base de conocimiento</div>’+
-‘<button onclick="startSync()" class="btn btn-secondary btn-sm" id="sync-btn">’+
-(syncProgress?‘Sincronizando…’:’↻ Sincronizar contactos’)+
-‘</button></div>’+
-(syncProgress?’<div style="background:#6366f118;border-radius:8px;padding:10px 12px;font-size:12px;color:#818cf8">’+syncProgress+’</div>’:
-‘<div style="font-size:12px;color:#6b7280">Sincronizá tus contactos de Notion para poder hacer búsquedas semánticas. Solo necesitás hacerlo una vez (y cuando agregues contactos nuevos).</div>’)+
-‘</div>’+
-‘<div style="margin-bottom:20px">’+
-‘<label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;display:block;margin-bottom:8px">Necesidad del cliente</label>’+
-‘<textarea id="match-input" class="inp" style="height:100px;resize:none;line-height:1.6" placeholder="Ej: Cliente banco mediano en Argentina necesita una solución de onboarding digital con validación de identidad...">’+matchQuery+’</textarea>’+
-‘<div style="display:flex;gap:8px;margin-top:10px">’+
-‘<button onclick="runMatch()" class="btn btn-primary" style="flex:1" id="match-btn">’+
-(matchLoading?‘Buscando matches…’:’⟡ Buscar match’)+
-‘</button>’+
-‘<button onclick="pasteFromMeeting()" class="btn btn-secondary">Pegar desde reunión</button>’+
-‘</div></div>’+
-(matchResult&&!matchLoading?renderMatchResults():’’)+
-‘</div>’;
+  return '<div>'+
+    '<div style="margin-bottom:24px">'+
+    '<h2 style="font-size:20px;font-weight:900;margin:0 0 4px;letter-spacing:-.03em">&#x27E1; Match Engine</h2>'+
+    '<p style="color:#6b7280;font-size:13px;margin:0">Describí una necesidad de un cliente y encontramos quién en tu red puede resolverla.</p>'+
+    '</div>'+
+    '<div style="background:#0c0c18;border:1px solid #1a1a2e;border-radius:11px;padding:20px;margin-bottom:24px">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
+    '<div style="font-size:13px;font-weight:700;color:#a5b4fc">Base de conocimiento</div>'+
+    '<button onclick="startSync()" class="btn btn-secondary btn-sm" id="sync-btn">'+
+    (syncProgress?'Sincronizando...':'&#x21BB; Sincronizar contactos')+
+    '</button></div>'+
+    (syncProgress?'<div style="background:#6366f118;border-radius:8px;padding:10px 12px;font-size:12px;color:#818cf8">'+syncProgress+'</div>':
+    '<div style="font-size:12px;color:#6b7280">Sincronizá tus contactos de Notion para poder hacer búsquedas semánticas. Solo necesitás hacerlo una vez (y cuando agregues contactos nuevos).</div>')+
+    '</div>'+
+    '<div style="margin-bottom:20px">'+
+    '<label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;display:block;margin-bottom:8px">Necesidad del cliente</label>'+
+    '<textarea id="match-input" class="inp" style="height:100px;resize:none;line-height:1.6" placeholder="Ej: Cliente banco mediano en Argentina necesita una solución de onboarding digital con validación de identidad...">'+matchQuery+'</textarea>'+
+    '<div style="display:flex;gap:8px;margin-top:10px">'+
+    '<button onclick="runMatch()" class="btn btn-primary" style="flex:1" id="match-btn">'+
+    (matchLoading?'Buscando matches...':'&#x27E1; Buscar match')+
+    '</button>'+
+    '<button onclick="pasteFromMeeting()" class="btn btn-secondary">Pegar desde reunión</button>'+
+    '</div></div>'+
+    (matchResult&&!matchLoading?renderMatchResults():'')+
+    '</div>';
 }
 
 function renderMatchResults(){
-if(matchResult.error) return ‘<div style="background:#ef444418;border:1px solid #ef444430;border-radius:9px;padding:14px;color:#fca5a5;font-size:13px">Error: ‘+matchResult.error+’</div>’;
-const matches=matchResult.matches||[];
-return ‘<div>’+
-‘<div style="background:#6366f118;border:1px solid #6366f130;border-radius:9px;padding:12px 14px;margin-bottom:16px">’+
-‘<div style="font-size:11px;color:#6b7280;margin-bottom:4px">Necesidad detectada</div>’+
-‘<div style="font-size:13px;color:#e8e8f0;font-weight:600">’+(matchResult.necesidad_detectada||’’)+’</div>’+
-(matchResult.resumen?’<div style="font-size:12px;color:#818cf8;margin-top:6px">’+matchResult.resumen+’</div>’:’’)+
-‘</div>’+
-‘<div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">’+matches.length+’ match’+(matches.length!==1?‘es’:’’)+’ encontrado’+(matches.length!==1?‘s’:’’)+’</div>’+
-matches.map(function(m,i){
-const scoreColor=m.score>=8?’#10b981’:m.score>=6?’#6366f1’:’#f59e0b’;
-return ‘<div class="match-card">’+
-‘<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">’+
-‘<div>’+
-‘<div style="font-size:14px;font-weight:800;margin-bottom:2px">’+m.titulo+’</div>’+
-‘<div style="font-size:11px;color:#6b7280">’+chip(m.tipo,’#6366f1’)+’</div>’+
-‘</div>’+
-‘<div style="text-align:right">’+
-‘<div style="font-size:20px;font-weight:900;color:'+scoreColor+'">’+m.score+’/10</div>’+
-‘</div></div>’+
-‘<div class="score-bar"><div class="score-fill" style="width:'+(m.score*10)+'%;background:'+scoreColor+'"></div></div>’+
-‘<div style="font-size:12px;color:#9ca3af;line-height:1.6;margin-bottom:10px">’+m.justificacion+’</div>’+
-‘<div style="background:#13131f;border-radius:7px;padding:8px 10px;margin-bottom:10px">’+
-‘<span style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em">Próximo paso</span>’+
-‘<div style="font-size:12px;color:#e8e8f0;margin-top:3px">’+m.proximo_paso+’</div>’+
-‘</div>’+
-‘<div style="display:flex;gap:8px;align-items:center">’+
-‘<div style="display:flex;gap:6px">’+
-‘<button onclick="sendFeedback(\''+m.id+'\',true,0)" style="background:#10b98118;border:1px solid #10b98130;border-radius:6px;color:#10b981;font-size:12px;padding:5px 10px;cursor:pointer">👍 Buen match</button>’+
-‘<button onclick="sendFeedback(\''+m.id+'\',false,0)" style="background:#ef444418;border:1px solid #ef444430;border-radius:6px;color:#ef4444;font-size:12px;padding:5px 10px;cursor:pointer">👎 No relevante</button>’+
-‘</div>’+
-‘<button onclick="generateOutreach(\''+m.id+'\',\''+encodeURIComponent(m.titulo)+'\',\''+encodeURIComponent(m.justificacion)+'\',\''+encodeURIComponent(m.proximo_paso)+'\')" style="background:#6366f115;border:1px solid #6366f130;border-radius:6px;color:#a5b4fc;font-size:12px;padding:5px 12px;cursor:pointer;margin-left:auto">✉ Generar email →</button>’+
-‘</div></div>’;
-}).join(’’)+
-‘</div>’;
+  if(matchResult.error) return '<div style="background:#ef444418;border:1px solid #ef444430;border-radius:9px;padding:14px;color:#fca5a5;font-size:13px">Error: '+matchResult.error+'</div>';
+  const matches=matchResult.matches||[];
+  return '<div>'+
+    '<div style="background:#6366f118;border:1px solid #6366f130;border-radius:9px;padding:12px 14px;margin-bottom:16px">'+
+    '<div style="font-size:11px;color:#6b7280;margin-bottom:4px">Necesidad detectada</div>'+
+    '<div style="font-size:13px;color:#e8e8f0;font-weight:600">'+(matchResult.necesidad_detectada||'')+'</div>'+
+    (matchResult.resumen?'<div style="font-size:12px;color:#818cf8;margin-top:6px">'+matchResult.resumen+'</div>':'')+
+    '</div>'+
+    '<div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">'+matches.length+' match'+(matches.length!==1?'es':'')+' encontrado'+(matches.length!==1?'s':'')+'</div>'+
+    matches.map(function(m,i){
+      const scoreColor=m.score>=8?'#10b981':m.score>=6?'#6366f1':'#f59e0b';
+      return '<div class="match-card">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">'+
+        '<div>'+
+        '<div style="font-size:14px;font-weight:800;margin-bottom:2px">'+m.titulo+'</div>'+
+        '<div style="font-size:11px;color:#6b7280">'+chip(m.tipo,'#6366f1')+'</div>'+
+        '</div>'+
+        '<div style="text-align:right">'+
+        '<div style="font-size:20px;font-weight:900;color:'+scoreColor+'">'+m.score+'/10</div>'+
+        '</div></div>'+
+        '<div class="score-bar"><div class="score-fill" style="width:'+(m.score*10)+'%;background:'+scoreColor+'"></div></div>'+
+        '<div style="font-size:12px;color:#9ca3af;line-height:1.6;margin-bottom:10px">'+m.justificacion+'</div>'+
+        '<div style="background:#13131f;border-radius:7px;padding:8px 10px;margin-bottom:10px">'+
+        '<span style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em">Próximo paso</span>'+
+        '<div style="font-size:12px;color:#e8e8f0;margin-top:3px">'+m.proximo_paso+'</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:8px;align-items:center">'+
+        '<div style="display:flex;gap:6px">'+
+        '<button onclick="sendFeedback(\''+m.id+'\',true,0)" style="background:#10b98118;border:1px solid #10b98130;border-radius:6px;color:#10b981;font-size:12px;padding:5px 10px;cursor:pointer">&#x1F44D; Buen match</button>'+
+        '<button onclick="sendFeedback(\''+m.id+'\',false,0)" style="background:#ef444418;border:1px solid #ef444430;border-radius:6px;color:#ef4444;font-size:12px;padding:5px 10px;cursor:pointer">&#x1F44E; No relevante</button>'+
+        '</div>'+
+        '<button onclick="generateOutreach(\''+m.id+'\',\''+encodeURIComponent(m.titulo)+'\',\''+encodeURIComponent(m.justificacion)+'\',\''+encodeURIComponent(m.proximo_paso)+'\')" style="background:#6366f115;border:1px solid #6366f130;border-radius:6px;color:#a5b4fc;font-size:12px;padding:5px 12px;cursor:pointer;margin-left:auto">&#x2709; Generar email →</button>'+
+        '</div></div>';
+    }).join('')+
+    '</div>';
 }
 
 async function runMatch(){
-const q=document.getElementById(‘match-input’)?.value.trim();
-if(!q){ toast(‘Describí la necesidad primero’,’#f59e0b’); return; }
-matchQuery=q;
-matchLoading=true;
-matchResult=null;
-render();
-try {
-const res=await fetch(PROXY+’/match’,{
-method:‘POST’,
-headers:{‘Content-Type’:‘application/json’},
-body:JSON.stringify({query:q}),
-});
-matchResult=await res.json();
-} catch(e){
-matchResult={error:e.message};
-}
-matchLoading=false;
-render();
-setTimeout(function(){ document.querySelector(’.match-card’)?.scrollIntoView({behavior:‘smooth’}); },100);
+  const q=document.getElementById('match-input')?.value.trim();
+  if(!q){ toast('Describí la necesidad primero','#f59e0b'); return; }
+  matchQuery=q;
+  matchLoading=true;
+  matchResult=null;
+  render();
+  try {
+    const res=await fetch(PROXY+'/match',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query:q}),
+    });
+    matchResult=await res.json();
+  } catch(e){
+    matchResult={error:e.message};
+  }
+  matchLoading=false;
+  render();
+  setTimeout(function(){ document.querySelector('.match-card')?.scrollIntoView({behavior:'smooth'}); },100);
 }
 
 function pasteFromMeeting(){
-const notes=state.meetings[0]?.notes||’’;
-if(!notes){ toast(‘No hay reuniones con notas’,’#f59e0b’); return; }
-matchQuery=notes;
-render();
-setTimeout(function(){ const el=document.getElementById(‘match-input’); if(el) el.value=notes; },50);
+  const notes=state.meetings[0]?.notes||'';
+  if(!notes){ toast('No hay reuniones con notas','#f59e0b'); return; }
+  matchQuery=notes;
+  render();
+  setTimeout(function(){ const el=document.getElementById('match-input'); if(el) el.value=notes; },50);
 }
 
 async function sendFeedback(id,positive,currentScore){
-try {
-await fetch(PROXY+’/feedback’,{method:‘POST’,headers:{‘Content-Type’:‘application/json’},body:JSON.stringify({id:id,positive:positive,current_score:currentScore||0})});
-toast(positive?’✓ Match marcado como bueno’:’✓ Feedback registrado’, positive?’#10b981’:’#6b7280’);
-} catch(e){ toast(‘Error’,’#ef4444’); }
+  try {
+    await fetch(PROXY+'/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,positive:positive,current_score:currentScore||0})});
+    toast(positive?'&#x2713; Match marcado como bueno':'&#x2713; Feedback registrado', positive?'#10b981':'#6b7280');
+  } catch(e){ toast('Error','#ef4444'); }
 }
 
 async function generateOutreach(id,titleEnc,justEnc,nextEnc){
-const title=decodeURIComponent(titleEnc);
-const just=decodeURIComponent(justEnc);
-const next=decodeURIComponent(nextEnc);
-const need=matchResult?matchResult.necesidad_detectada||matchQuery:matchQuery;
-try {
-const res=await fetch(PROXY+’/outreach’,{
-method:‘POST’,
-headers:{‘Content-Type’:‘application/json’},
-body:JSON.stringify({contact:title,company:’’,need:need,justification:just,next_step:next}),
-});
-const data=await res.json();
-const mc=document.getElementById(‘modal-container’);
-mc.innerHTML=’<div class="modal-overlay" onclick="if(event.target===this)closeModal()">’+
-‘<div class="modal" style="width:560px">’+
-‘<div class="modal-title"><h3>✉ Email generado</h3><button class="close-btn" onclick="closeModal()">×</button></div>’+
-‘<div style="margin-bottom:12px">’+
-‘<div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Asunto</div>’+
-‘<div style="background:#13131f;border-radius:7px;padding:10px 12px;font-size:13px;font-weight:600">’+(data.asunto||’’)+’</div>’+
-‘</div>’+
-‘<div style="margin-bottom:16px">’+
-‘<div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Cuerpo</div>’+
-‘<textarea class="inp" style="height:160px;resize:vertical;line-height:1.6">’+(data.cuerpo||’’)+’</textarea>’+
-‘</div>’+
-‘<div style="display:flex;gap:8px;justify-content:flex-end">’+
-‘<button class="btn btn-secondary" onclick="closeModal()">Cerrar</button>’+
-‘<button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.querySelector(\'#modal-container textarea\').value);toast(\'Copiado!\')">Copiar</button>’+
-‘</div></div></div>’;
-} catch(e){ toast(‘Error generando email’,’#ef4444’); }
+  const title=decodeURIComponent(titleEnc);
+  const just=decodeURIComponent(justEnc);
+  const next=decodeURIComponent(nextEnc);
+  const need=matchResult?matchResult.necesidad_detectada||matchQuery:matchQuery;
+  try {
+    const res=await fetch(PROXY+'/outreach',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contact:title,company:'',need:need,justification:just,next_step:next}),
+    });
+    const data=await res.json();
+    const mc=document.getElementById('modal-container');
+    mc.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()">'+
+      '<div class="modal" style="width:560px">'+
+      '<div class="modal-title"><h3>&#x2709; Email generado</h3><button class="close-btn" onclick="closeModal()">×</button></div>'+
+      '<div style="margin-bottom:12px">'+
+      '<div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Asunto</div>'+
+      '<div style="background:#13131f;border-radius:7px;padding:10px 12px;font-size:13px;font-weight:600">'+(data.asunto||'')+'</div>'+
+      '</div>'+
+      '<div style="margin-bottom:16px">'+
+      '<div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Cuerpo</div>'+
+      '<textarea class="inp" style="height:160px;resize:vertical;line-height:1.6">'+(data.cuerpo||'')+'</textarea>'+
+      '</div>'+
+      '<div style="display:flex;gap:8px;justify-content:flex-end">'+
+      '<button class="btn btn-secondary" onclick="closeModal()">Cerrar</button>'+
+      '<button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.querySelector(\'#modal-container textarea\').value);toast(\'Copiado!\')">Copiar</button>'+
+      '</div></div></div>';
+  } catch(e){ toast('Error generando email','#ef4444'); }
 }
 
 async function startSync(){
-syncProgress=‘Cargando contactos de Notion…’;
-render();
-try {
-const res=await fetch(PROXY+’/notion/contacts’);
-const data=await res.json();
-const contacts=data.results||[];
-let indexed=0;
-let skipped=0;
-for(let i=0;i<contacts.length;i++){
-const c=contacts[i];
-const p=c.properties;
-function txt(key){
-if(!p[key]) return ‘’;
-if(p[key].title) return p[key].title.map(function(t){ return t.plain_text; }).join(’’);
-if(p[key].rich_text) return p[key].rich_text.map(function(t){ return t.plain_text; }).join(’’);
-if(p[key].email) return p[key].email||’’;
-if(p[key].phone_number) return p[key].phone_number||’’;
-if(p[key].multi_select) return p[key].multi_select.map(function(s){ return s.name; }).join(’, ‘);
-return ‘’;
-}
-const name=txt(‘Name’);
-if(!name){ skipped++; continue; }
-syncProgress=‘Indexando ‘+i+’/’+contacts.length+’: ‘+name+’…’;
-render();
-try {
-await fetch(PROXY+’/knowledge/index-contact’,{
-method:‘POST’,
-headers:{‘Content-Type’:‘application/json’},
-body:JSON.stringify({
-name:name,company:txt(‘Company’),position:txt(‘Position’),country:txt(‘Country’),
-email:txt(‘Email’),notes:txt(‘Notes’),service:txt(‘Servicio contratado’),
-interest:txt(‘Country of Interest’),source:txt(‘Lead Source’),status:txt(‘Lead Status’),
-notion_id:c.id,notion_url:c.url,
-}),
-});
-indexed++;
-} catch(e2){ skipped++; }
-}
-syncProgress=null;
-toast(‘Sync completo: ‘+indexed+’ contactos indexados’,’#10b981’);
-render();
-} catch(e){
-syncProgress=null;
-toast(‘Error en sync: ‘+e.message,’#ef4444’);
-render();
-}
+  syncProgress='Cargando contactos de Notion...';
+  render();
+  try {
+    const res=await fetch(PROXY+'/notion/contacts');
+    const data=await res.json();
+    const contacts=data.results||[];
+    let indexed=0;
+    let skipped=0;
+    for(let i=0;i<contacts.length;i++){
+      const c=contacts[i];
+      const p=c.properties;
+      function txt(key){
+        if(!p[key]) return '';
+        if(p[key].title) return p[key].title.map(function(t){ return t.plain_text; }).join('');
+        if(p[key].rich_text) return p[key].rich_text.map(function(t){ return t.plain_text; }).join('');
+        if(p[key].email) return p[key].email||'';
+        if(p[key].phone_number) return p[key].phone_number||'';
+        if(p[key].multi_select) return p[key].multi_select.map(function(s){ return s.name; }).join(', ');
+        return '';
+      }
+      const name=txt('Name');
+      if(!name){ skipped++; continue; }
+      syncProgress='Indexando '+i+'/'+contacts.length+': '+name+'...';
+      render();
+      try {
+        await fetch(PROXY+'/knowledge/index-contact',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            name:name,company:txt('Company'),position:txt('Position'),country:txt('Country'),
+            email:txt('Email'),notes:txt('Notes'),service:txt('Servicio contratado'),
+            interest:txt('Country of Interest'),source:txt('Lead Source'),status:txt('Lead Status'),
+            notion_id:c.id,notion_url:c.url,
+          }),
+        });
+        indexed++;
+      } catch(e2){ skipped++; }
+    }
+    syncProgress=null;
+    toast('Sync completo: '+indexed+' contactos indexados','#10b981');
+    render();
+  } catch(e){
+    syncProgress=null;
+    toast('Error en sync: '+e.message,'#ef4444');
+    render();
+  }
 }
 
 function notionProp(page,key,type){
-const p=page.properties[key];
-if(!p) return ‘’;
-if(type===‘title’) return (p.title||[]).map(function(t){ return t.plain_text; }).join(’’);
-if(type===‘rich_text’) return (p.rich_text||[]).map(function(t){ return t.plain_text; }).join(’’);
-if(type===‘email’) return p.email||’’;
-if(type===‘phone’) return p.phone_number||’’;
-if(type===‘select’) return p.select?p.select.name:’’;
-if(type===‘multi_select’) return (p.multi_select||[]).map(function(s){ return s.name; }).join(’, ‘);
-if(type===‘checkbox’) return p.checkbox?’✓’:’’;
-return ‘’;
+  const p=page.properties[key];
+  if(!p) return '';
+  if(type==='title') return (p.title||[]).map(function(t){ return t.plain_text; }).join('');
+  if(type==='rich_text') return (p.rich_text||[]).map(function(t){ return t.plain_text; }).join('');
+  if(type==='email') return p.email||'';
+  if(type==='phone') return p.phone_number||'';
+  if(type==='select') return p.select?p.select.name:'';
+  if(type==='multi_select') return (p.multi_select||[]).map(function(s){ return s.name; }).join(', ');
+  if(type==='checkbox') return p.checkbox?'&#x2713;':'';
+  return '';
 }
 
 async function loadCRM(){
-crmLoading=true; render();
-try {
-const res=await fetch(PROXY+’/notion/contacts’);
-const data=await res.json();
-crmContacts=data.results||[];
-} catch(e){ toast(‘Error cargando CRM’,’#ef4444’); }
-crmLoading=false; render();
+  crmLoading=true; render();
+  try {
+    const res=await fetch(PROXY+'/notion/contacts');
+    const data=await res.json();
+    crmContacts=data.results||[];
+  } catch(e){ toast('Error cargando CRM','#ef4444'); }
+  crmLoading=false; render();
 }
 
 function renderCRM(){
-const filtered=crmContacts.filter(function(c){
-if(!crmSearch) return true;
-const s=crmSearch.toLowerCase();
-const name=(notionProp(c,‘Name’,‘title’)+’ ‘+notionProp(c,‘Full Name’,‘rich_text’)+’ ‘+notionProp(c,‘Company’,‘rich_text’)).toLowerCase();
-return name.includes(s);
-});
-return ‘<div>’+
-‘<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">’+
-‘<div><h2 style="font-size:20px;font-weight:900;margin:0 0 4px;letter-spacing:-.03em">◉ CRM — Notion</h2>’+
-‘<p style="color:#6b7280;font-size:12px;margin:0">’+crmContacts.length+’ contactos</p></div>’+
-‘<div style="display:flex;gap:8px">’+
-‘<button onclick="loadCRM()" class="btn btn-secondary btn-sm">↻ Actualizar</button>’+
-‘<button onclick="openAddContactModal()" class="btn btn-primary">+ Contacto</button></div></div>’+
-‘<div style="margin-bottom:16px"><input id="crm-search" class="inp" placeholder="Buscar por nombre, empresa..." value="'+crmSearch+'" oninput="crmSearch=this.value;render()" style="max-width:400px"></div>’+
-(crmLoading?’<div style="text-align:center;color:#6b7280;padding:40px;font-size:13px">Cargando…</div>’:’’)+
-(!crmLoading&&filtered.length===0?’<div class="card" style="text-align:center;color:#6b7280;padding:32px;font-size:13px">No hay contactos.</div>’:’’)+
-‘<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">’+
-filtered.map(function(c){
-const name=notionProp(c,‘Name’,‘title’)||notionProp(c,‘Full Name’,‘rich_text’)||’(Sin nombre)’;
-const company=notionProp(c,‘Company’,‘rich_text’);
-const position=notionProp(c,‘Position’,‘rich_text’);
-const email=notionProp(c,‘Email’,‘email’);
-const country=notionProp(c,‘Country’,‘rich_text’);
-const status=notionProp(c,‘Lead Status’,‘rich_text’);
-const source=notionProp(c,‘Lead Source’,‘multi_select’);
-const traveled=notionProp(c,‘Traveled With Us’,‘checkbox’);
-return ‘<div class="card" style="padding:14px;cursor:pointer" onclick="openContactDetail(\''+c.id+'\')">’+
-‘<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">’+
-‘<div style="width:36px;height:36px;border-radius:50%;background:#6366f120;border:1.5px solid #6366f140;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#818cf8;flex-shrink:0">’+(name[0]||’?’)+’</div>’+
-‘<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">’+
-(traveled===’✓’?’<span style="font-size:10px;background:#10b98118;color:#10b981;border-radius:4px;padding:1px 6px;border:1px solid #10b98128">✈ Viajó</span>’:’’)+
-(status?’<span style="font-size:10px;background:#6366f118;color:#818cf8;border-radius:4px;padding:1px 6px;border:1px solid #6366f128">’+status+’</span>’:’’)+
-‘</div></div>’+
-‘<div style="font-size:13px;font-weight:700;margin-bottom:2px">’+name+’</div>’+
-(position?’<div style="font-size:11px;color:#9ca3af">’+position+’</div>’:’’)+
-(company?’<div style="font-size:11px;color:#6b7280;margin-top:1px">’+company+’</div>’:’’)+
-‘<div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap">’+
-(country?’<span style="font-size:10px;color:#6b7280;background:#1a1a28;border-radius:4px;padding:1px 5px">’+country+’</span>’:’’)+
-(source?’<span style="font-size:10px;color:#f59e0b;background:#f59e0b18;border-radius:4px;padding:1px 5px;border:1px solid #f59e0b28">’+source.split(’,’)[0]+’</span>’:’’)+
-‘</div>’+
-(email?’<div style="font-size:11px;color:#6366f1;margin-top:6px">’+email+’</div>’:’’)+
-‘</div>’;
-}).join(’’)+’</div></div>’;
+  const filtered=crmContacts.filter(function(c){
+    if(!crmSearch) return true;
+    const s=crmSearch.toLowerCase();
+    const name=(notionProp(c,'Name','title')+' '+notionProp(c,'Full Name','rich_text')+' '+notionProp(c,'Company','rich_text')).toLowerCase();
+    return name.includes(s);
+  });
+  return '<div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">'+
+    '<div><h2 style="font-size:20px;font-weight:900;margin:0 0 4px;letter-spacing:-.03em">&#x25C9; CRM — Notion</h2>'+
+    '<p style="color:#6b7280;font-size:12px;margin:0">'+crmContacts.length+' contactos</p></div>'+
+    '<div style="display:flex;gap:8px">'+
+    '<button onclick="loadCRM()" class="btn btn-secondary btn-sm">&#x21BB; Actualizar</button>'+
+    '<button onclick="openAddContactModal()" class="btn btn-primary">+ Contacto</button></div></div>'+
+    '<div style="margin-bottom:16px"><input id="crm-search" class="inp" placeholder="Buscar por nombre, empresa..." value="'+crmSearch+'" oninput="crmSearch=this.value;render()" style="max-width:400px"></div>'+
+    (crmLoading?'<div style="text-align:center;color:#6b7280;padding:40px;font-size:13px">Cargando...</div>':'')+
+    (!crmLoading&&filtered.length===0?'<div class="card" style="text-align:center;color:#6b7280;padding:32px;font-size:13px">No hay contactos.</div>':'')+
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">'+
+    filtered.map(function(c){
+      const name=notionProp(c,'Name','title')||notionProp(c,'Full Name','rich_text')||'(Sin nombre)';
+      const company=notionProp(c,'Company','rich_text');
+      const position=notionProp(c,'Position','rich_text');
+      const email=notionProp(c,'Email','email');
+      const country=notionProp(c,'Country','rich_text');
+      const status=notionProp(c,'Lead Status','rich_text');
+      const source=notionProp(c,'Lead Source','multi_select');
+      const traveled=notionProp(c,'Traveled With Us','checkbox');
+      return '<div class="card" style="padding:14px;cursor:pointer" onclick="openContactDetail(\''+c.id+'\')">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'+
+        '<div style="width:36px;height:36px;border-radius:50%;background:#6366f120;border:1.5px solid #6366f140;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#818cf8;flex-shrink:0">'+(name[0]||'?')+'</div>'+
+        '<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">'+
+        (traveled==='&#x2713;'?'<span style="font-size:10px;background:#10b98118;color:#10b981;border-radius:4px;padding:1px 6px;border:1px solid #10b98128">&#x2708; Viajó</span>':'')+
+        (status?'<span style="font-size:10px;background:#6366f118;color:#818cf8;border-radius:4px;padding:1px 6px;border:1px solid #6366f128">'+status+'</span>':'')+
+        '</div></div>'+
+        '<div style="font-size:13px;font-weight:700;margin-bottom:2px">'+name+'</div>'+
+        (position?'<div style="font-size:11px;color:#9ca3af">'+position+'</div>':'')+
+        (company?'<div style="font-size:11px;color:#6b7280;margin-top:1px">'+company+'</div>':'')+
+        '<div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap">'+
+        (country?'<span style="font-size:10px;color:#6b7280;background:#1a1a28;border-radius:4px;padding:1px 5px">'+country+'</span>':'')+
+        (source?'<span style="font-size:10px;color:#f59e0b;background:#f59e0b18;border-radius:4px;padding:1px 5px;border:1px solid #f59e0b28">'+source.split(',')[0]+'</span>':'')+
+        '</div>'+
+        (email?'<div style="font-size:11px;color:#6366f1;margin-top:6px">'+email+'</div>':'')+
+        '</div>';
+    }).join('')+'</div></div>';
 }
 
 function openContactDetail(id){
-const c=crmContacts.find(function(x){ return x.id===id; });
-if(!c) return;
-const name=notionProp(c,‘Name’,‘title’)||notionProp(c,‘Full Name’,‘rich_text’)||’(Sin nombre)’;
-const company=notionProp(c,‘Company’,‘rich_text’);
-const position=notionProp(c,‘Position’,‘rich_text’);
-const email=notionProp(c,‘Email’,‘email’);
-const phone=notionProp(c,‘Phone’,‘phone’);
-const country=notionProp(c,‘Country’,‘rich_text’);
-const status=notionProp(c,‘Lead Status’,‘rich_text’);
-const source=notionProp(c,‘Lead Source’,‘multi_select’);
-const interest=notionProp(c,‘Country of Interest’,‘multi_select’);
-const traveled=notionProp(c,‘Traveled With Us’,‘checkbox’);
-const notes=notionProp(c,‘Notes’,‘rich_text’);
-const service=notionProp(c,‘Servicio contratado’,‘rich_text’);
-const mc=document.getElementById(‘modal-container’);
-mc.innerHTML=’<div class="modal-overlay" onclick="if(event.target===this)closeModal()">’+
-‘<div class="modal" style="width:540px">’+
-‘<div class="modal-title"><div><h3>’+name+’</h3>’+
-(position?’<div style="font-size:12px;color:#6b7280;margin-top:2px">’+position+(company?’ · ‘+company:’’)+’</div>’:’’)+
-‘</div><button class="close-btn" onclick="closeModal()">×</button></div>’+
-‘<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">’+
-(email?’<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Email</div><div style="font-size:13px">’+email+’</div></div>’:’’)+
-(phone?’<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Teléfono</div><div style="font-size:13px">’+phone+’</div></div>’:’’)+
-(country?’<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">País</div><div style="font-size:13px">’+country+’</div></div>’:’’)+
-(status?’<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Lead Status</div><div style="font-size:13px">’+status+’</div></div>’:’’)+
-(source?’<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Fuente</div><div style="font-size:13px">’+source+’</div></div>’:’’)+
-(interest?’<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Países de interés</div><div style="font-size:13px">’+interest+’</div></div>’:’’)+
-(service?’<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Servicio</div><div style="font-size:13px">’+service+’</div></div>’:’’)+
-(traveled===’✓’?’<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Viajó con +Partners</div><div style="font-size:13px;color:#10b981">✓ Sí</div></div>’:’’)+
-‘</div>’+
-(notes?’<div style="background:#13131f;border-radius:8px;padding:12px;margin-bottom:16px"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Notas</div><div style="font-size:13px;line-height:1.6;color:#9ca3af">’+notes+’</div></div>’:’’)+
-‘<div style="display:flex;gap:8px;justify-content:flex-end">’+
-‘<button onclick="window.open(\''+c.url+'\',\'_blank\')" class="btn btn-secondary">Abrir en Notion ↗</button>’+
-‘<button onclick="closeModal();setView(\'match\')" class="btn btn-primary">⟡ Buscar match</button>’+
-‘</div></div></div>’;
+  const c=crmContacts.find(function(x){ return x.id===id; });
+  if(!c) return;
+  const name=notionProp(c,'Name','title')||notionProp(c,'Full Name','rich_text')||'(Sin nombre)';
+  const company=notionProp(c,'Company','rich_text');
+  const position=notionProp(c,'Position','rich_text');
+  const email=notionProp(c,'Email','email');
+  const phone=notionProp(c,'Phone','phone');
+  const country=notionProp(c,'Country','rich_text');
+  const status=notionProp(c,'Lead Status','rich_text');
+  const source=notionProp(c,'Lead Source','multi_select');
+  const interest=notionProp(c,'Country of Interest','multi_select');
+  const traveled=notionProp(c,'Traveled With Us','checkbox');
+  const notes=notionProp(c,'Notes','rich_text');
+  const service=notionProp(c,'Servicio contratado','rich_text');
+  const mc=document.getElementById('modal-container');
+  mc.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()">'+
+    '<div class="modal" style="width:540px">'+
+    '<div class="modal-title"><div><h3>'+name+'</h3>'+
+    (position?'<div style="font-size:12px;color:#6b7280;margin-top:2px">'+position+(company?' · '+company:'')+'</div>':'')+
+    '</div><button class="close-btn" onclick="closeModal()">×</button></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">'+
+    (email?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Email</div><div style="font-size:13px">'+email+'</div></div>':'')+
+    (phone?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Teléfono</div><div style="font-size:13px">'+phone+'</div></div>':'')+
+    (country?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">País</div><div style="font-size:13px">'+country+'</div></div>':'')+
+    (status?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Lead Status</div><div style="font-size:13px">'+status+'</div></div>':'')+
+    (source?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Fuente</div><div style="font-size:13px">'+source+'</div></div>':'')+
+    (interest?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Países de interés</div><div style="font-size:13px">'+interest+'</div></div>':'')+
+    (service?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Servicio</div><div style="font-size:13px">'+service+'</div></div>':'')+
+    (traveled==='&#x2713;'?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Viajó con +Partners</div><div style="font-size:13px;color:#10b981">&#x2713; Sí</div></div>':'')+
+    '</div>'+
+    (notes?'<div style="background:#13131f;border-radius:8px;padding:12px;margin-bottom:16px"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Notas</div><div style="font-size:13px;line-height:1.6;color:#9ca3af">'+notes+'</div></div>':'')+
+    '<div style="display:flex;gap:8px;justify-content:flex-end">'+
+    '<button onclick="window.open(\''+c.url+'\',\'_blank\')" class="btn btn-secondary">Abrir en Notion ↗</button>'+
+    '<button onclick="closeModal();setView(\'match\')" class="btn btn-primary">&#x27E1; Buscar match</button>'+
+    '</div></div></div>';
 }
 
 function openAddContactModal(){
-const mc=document.getElementById(‘modal-container’);
-mc.innerHTML=’<div class="modal-overlay" onclick="if(event.target===this)closeModal()">’+
-‘<div class="modal">’+
-‘<div class="modal-title"><h3>Nuevo contacto</h3><button class="close-btn" onclick="closeModal()">×</button></div>’+
-‘<div class="grid2"><div class="field"><label>Nombre *</label><input id="nc-name" class="inp" autofocus placeholder="Juan García"></div>’+
-‘<div class="field"><label>Empresa</label><input id="nc-company" class="inp" placeholder="Banco XYZ"></div></div>’+
-‘<div class="grid2"><div class="field"><label>Cargo</label><input id="nc-position" class="inp" placeholder="CEO"></div>’+
-‘<div class="field"><label>País</label><input id="nc-country" class="inp" placeholder="Argentina"></div></div>’+
-‘<div class="grid2"><div class="field"><label>Email</label><input id="nc-email" class="inp" type="email"></div>’+
-‘<div class="field"><label>Teléfono</label><input id="nc-phone" class="inp"></div></div>’+
-‘<div class="field"><label>Lead Status</label><input id="nc-status" class="inp" placeholder="Prospecto, Contactado..."></div>’+
-‘<div class="field"><label>Notas</label><textarea id="nc-notes" class="inp" style="height:64px;resize:none"></textarea></div>’+
-‘<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">’+
-‘<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>’+
-‘<button class="btn btn-primary" onclick="saveNewContact()">Crear en Notion</button>’+
-‘</div></div></div>’;
+  const mc=document.getElementById('modal-container');
+  mc.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()">'+
+    '<div class="modal">'+
+    '<div class="modal-title"><h3>Nuevo contacto</h3><button class="close-btn" onclick="closeModal()">×</button></div>'+
+    '<div class="grid2"><div class="field"><label>Nombre *</label><input id="nc-name" class="inp" autofocus placeholder="Juan García"></div>'+
+    '<div class="field"><label>Empresa</label><input id="nc-company" class="inp" placeholder="Banco XYZ"></div></div>'+
+    '<div class="grid2"><div class="field"><label>Cargo</label><input id="nc-position" class="inp" placeholder="CEO"></div>'+
+    '<div class="field"><label>País</label><input id="nc-country" class="inp" placeholder="Argentina"></div></div>'+
+    '<div class="grid2"><div class="field"><label>Email</label><input id="nc-email" class="inp" type="email"></div>'+
+    '<div class="field"><label>Teléfono</label><input id="nc-phone" class="inp"></div></div>'+
+    '<div class="field"><label>Lead Status</label><input id="nc-status" class="inp" placeholder="Prospecto, Contactado..."></div>'+
+    '<div class="field"><label>Notas</label><textarea id="nc-notes" class="inp" style="height:64px;resize:none"></textarea></div>'+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">'+
+    '<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>'+
+    '<button class="btn btn-primary" onclick="saveNewContact()">Crear en Notion</button>'+
+    '</div></div></div>';
 }
 
 async function saveNewContact(){
-const name=document.getElementById(‘nc-name’)?.value.trim();
-if(!name) return;
-const properties={
-‘Name’:{title:[{text:{content:name}}]},
-‘Company’:{rich_text:[{text:{content:document.getElementById(‘nc-company’)?.value||’’}}]},
-‘Position’:{rich_text:[{text:{content:document.getElementById(‘nc-position’)?.value||’’}}]},
-‘Country’:{rich_text:[{text:{content:document.getElementById(‘nc-country’)?.value||’’}}]},
-‘Email’:{email:document.getElementById(‘nc-email’)?.value||null},
-‘Phone’:{phone_number:document.getElementById(‘nc-phone’)?.value||null},
-‘Lead Status’:{rich_text:[{text:{content:document.getElementById(‘nc-status’)?.value||’’}}]},
-‘Notes’:{rich_text:[{text:{content:document.getElementById(‘nc-notes’)?.value||’’}}]},
-};
-closeModal();
-try {
-const res=await fetch(PROXY+’/notion/add’,{method:‘POST’,headers:{‘Content-Type’:‘application/json’},body:JSON.stringify({properties:properties})});
-const data=await res.json();
-if(data.id){ toast(‘Contacto creado en Notion’); await loadCRM(); }
-else toast(‘Error al crear contacto’,’#ef4444’);
-} catch(e){ toast(‘Error: ‘+e.message,’#ef4444’); }
+  const name=document.getElementById('nc-name')?.value.trim();
+  if(!name) return;
+  const properties={
+    'Name':{title:[{text:{content:name}}]},
+    'Company':{rich_text:[{text:{content:document.getElementById('nc-company')?.value||''}}]},
+    'Position':{rich_text:[{text:{content:document.getElementById('nc-position')?.value||''}}]},
+    'Country':{rich_text:[{text:{content:document.getElementById('nc-country')?.value||''}}]},
+    'Email':{email:document.getElementById('nc-email')?.value||null},
+    'Phone':{phone_number:document.getElementById('nc-phone')?.value||null},
+    'Lead Status':{rich_text:[{text:{content:document.getElementById('nc-status')?.value||''}}]},
+    'Notes':{rich_text:[{text:{content:document.getElementById('nc-notes')?.value||''}}]},
+  };
+  closeModal();
+  try {
+    const res=await fetch(PROXY+'/notion/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({properties:properties})});
+    const data=await res.json();
+    if(data.id){ toast('Contacto creado en Notion'); await loadCRM(); }
+    else toast('Error al crear contacto','#ef4444');
+  } catch(e){ toast('Error: '+e.message,'#ef4444'); }
 }
 
 function sendToAgent(notesEnc,projId,encoded){
-const notes=encoded?decodeURIComponent(notesEnc):notesEnc;
-agentProject=projId||’’;
-setView(‘agent’);
-setTimeout(function(){ const inp=document.getElementById(‘agent-input’); if(inp) inp.value=notes; },100);
+  const notes=encoded?decodeURIComponent(notesEnc):notesEnc;
+  agentProject=projId||'';
+  setView('agent');
+  setTimeout(function(){ const inp=document.getElementById('agent-input'); if(inp) inp.value=notes; },100);
 }
 
 async function submitAgent(msg){
-if(!msg.trim()) return;
-agentHistory.push({role:‘user’,content:msg});
-render();
-document.getElementById(‘agent-bottom’)?.scrollIntoView({behavior:‘smooth’});
-const projSel=document.getElementById(‘agent-proj-sel’);
-if(projSel) agentProject=projSel.value;
-const sendBtn=document.getElementById(‘agent-send-btn’);
-if(sendBtn){ sendBtn.disabled=true; sendBtn.textContent=’…’; }
-const systemPrompt=‘Sos el agente de gestión de proyectos de +Partners, consultora de fintech e innovación bancaria en Iberoamérica.\nSocios: Sasan Maniei, Jorge Moreno, Juan Fornaguera.\n\nEstado actual:\n’+JSON.stringify(state,null,2)+’\n\nREGLAS: Respondé SOLO con JSON sin texto extra ni markdown.\nSi hay tareas en el input: {“modo”:“tareas”,“resumen”:“frase corta”,“tareas”:[{“titulo”:”…”,“responsable”:“Sasan|Jorge|Juan”,“prioridad”:“urgente|alta|media|baja”,“fechaVencimiento”:“YYYY-MM-DD o null”,“notas”:”…”}]}\nSi es pregunta: {“modo”:“chat”,“respuesta”:“tu respuesta aquí”}\nEspañol rioplatense, informal pero profesional.’;
-try {
-const res=await fetch(PROXY,{method:‘POST’,headers:{‘Content-Type’:‘application/json’},body:JSON.stringify({model:‘claude-sonnet-4-20250514’,max_tokens:1500,system:systemPrompt,messages:agentHistory.map(function(h){ return {role:h.role,content:h.content}; })})});
-const json=await res.json();
-if(json.error){ throw new Error(json.error.message||‘API error’); }
-const text=(json.content&&json.content[0]?json.content[0].text:’’).replace(/`json|`/g,’’).trim();
-let result;
-try{ result=JSON.parse(text); } catch(e){ result={modo:‘chat’,respuesta:text||‘No pude procesar eso.’}; }
-if(result.modo===‘tareas’&&result.tareas&&result.tareas.length){
-const projId=agentProject||’’;
-for(let i=0;i<result.tareas.length;i++){
-const t=result.tareas[i];
-await dbAddTask({id:uid(),title:t.titulo,project_id:projId||t.proyectoId||null,assignee:USERS.includes(t.responsable)?t.responsable:currentUser,priority:PRIORITIES.includes(t.prioridad)?t.prioridad:‘media’,due_date:t.fechaVencimiento||null,notes:t.notas||’’,status:‘pendiente’,created_at:new Date().toISOString()});
-}
-const summary=‘Creé ‘+result.tareas.length+’ tarea’+(result.tareas.length>1?‘s’:’’)+’:\n’+result.tareas.map(function(t,i){ return (i+1)+’. ‘+t.titulo+’ → ‘+t.responsable; }).join(’\n’)+(result.resumen?’\n\n’+result.resumen:’’);
-agentHistory.push({role:‘assistant’,content:summary});
-toast(result.tareas.length+’ tarea’+(result.tareas.length>1?‘s’:’’)+’ creada’+(result.tareas.length>1?‘s’:’’));
-} else {
-agentHistory.push({role:‘assistant’,content:result.respuesta||result.resumen||‘Listo.’});
-}
-} catch(e){ agentHistory.push({role:‘assistant’,content:’Error: ’+e.message}); }
-render();
-setTimeout(function(){ document.getElementById(‘agent-bottom’)?.scrollIntoView({behavior:‘smooth’}); },100);
+  if(!msg.trim()) return;
+  agentHistory.push({role:'user',content:msg});
+  render();
+  document.getElementById('agent-bottom')?.scrollIntoView({behavior:'smooth'});
+  const projSel=document.getElementById('agent-proj-sel');
+  if(projSel) agentProject=projSel.value;
+  const sendBtn=document.getElementById('agent-send-btn');
+  if(sendBtn){ sendBtn.disabled=true; sendBtn.textContent='...'; }
+  const systemPrompt='Sos el agente de gestión de proyectos de +Partners, consultora de fintech e innovación bancaria en Iberoamérica.\nSocios: Sasan Maniei, Jorge Moreno, Juan Fornaguera.\n\nEstado actual:\n'+JSON.stringify(state,null,2)+'\n\nREGLAS: Respondé SOLO con JSON sin texto extra ni markdown.\nSi hay tareas en el input: {"modo":"tareas","resumen":"frase corta","tareas":[{"titulo":"...","responsable":"Sasan|Jorge|Juan","prioridad":"urgente|alta|media|baja","fechaVencimiento":"YYYY-MM-DD o null","notas":"..."}]}\nSi es pregunta: {"modo":"chat","respuesta":"tu respuesta aquí"}\nEspañol rioplatense, informal pero profesional.';
+  try {
+    const res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,system:systemPrompt,messages:agentHistory.map(function(h){ return {role:h.role,content:h.content}; })})});
+    const json=await res.json();
+    if(json.error){ throw new Error(json.error.message||'API error'); }
+    const text=(json.content&&json.content[0]?json.content[0].text:'').replace(/```json|```/g,'').trim();
+    let result;
+    try{ result=JSON.parse(text); } catch(e){ result={modo:'chat',respuesta:text||'No pude procesar eso.'}; }
+    if(result.modo==='tareas'&&result.tareas&&result.tareas.length){
+      const projId=agentProject||'';
+      for(let i=0;i<result.tareas.length;i++){
+        const t=result.tareas[i];
+        await dbAddTask({id:uid(),title:t.titulo,project_id:projId||t.proyectoId||null,assignee:USERS.includes(t.responsable)?t.responsable:currentUser,priority:PRIORITIES.includes(t.prioridad)?t.prioridad:'media',due_date:t.fechaVencimiento||null,notes:t.notas||'',status:'pendiente',created_at:new Date().toISOString()});
+      }
+      const summary='Creé '+result.tareas.length+' tarea'+(result.tareas.length>1?'s':'')+':\n'+result.tareas.map(function(t,i){ return (i+1)+'. '+t.titulo+' → '+t.responsable; }).join('\n')+(result.resumen?'\n\n'+result.resumen:'');
+      agentHistory.push({role:'assistant',content:summary});
+      toast(result.tareas.length+' tarea'+(result.tareas.length>1?'s':'')+' creada'+(result.tareas.length>1?'s':''));
+    } else {
+      agentHistory.push({role:'assistant',content:result.respuesta||result.resumen||'Listo.'});
+    }
+  } catch(e){ agentHistory.push({role:'assistant',content:'Error: '+e.message}); }
+  render();
+  setTimeout(function(){ document.getElementById('agent-bottom')?.scrollIntoView({behavior:'smooth'}); },100);
 }
 
 function submitAgentFromInput(){
-const inp=document.getElementById(‘agent-input’);
-if(inp&&inp.value.trim()) submitAgent(inp.value);
+  const inp=document.getElementById('agent-input');
+  if(inp&&inp.value.trim()) submitAgent(inp.value);
 }
 
 function openTaskModal(projId){
-projId=projId||null;
-const mc=document.getElementById(‘modal-container’);
-mc.innerHTML=’<div class="modal-overlay" onclick="if(event.target===this)closeModal()">’+
-‘<div class="modal">’+
-‘<div class="modal-title"><h3>Nueva tarea</h3><button class="close-btn" onclick="closeModal()">×</button></div>’+
-‘<div class="field"><label>Título *</label><input id="t-title" class="inp" placeholder="¿Qué hay que hacer?" autofocus></div>’+
-‘<div class="field"><label>Proyecto</label><select id="t-proj" class="inp"><option value="">Sin proyecto</option>’+state.projects.map(function(p){ return ‘<option value=”’+p.id+’”’+(p.id===projId?’ selected’:’’)+’>’+p.name+’</option>’; }).join(’’)+’</select></div>’+
-‘<div class="grid3">’+
-‘<div class="field"><label>Responsable</label><select id="t-assignee" class="inp">’+USERS.map(function(u){ return ‘<option’+(u===currentUser?’ selected’:’’)+’>’+u+’</option>’; }).join(’’)+’</select></div>’+
-‘<div class="field"><label>Prioridad</label><select id="t-priority" class="inp">’+PRIORITIES.map(function(p){ return ‘<option value=”’+p+’”’+(p===‘media’?’ selected’:’’)+’>’+p+’</option>’; }).join(’’)+’</select></div>’+
-‘<div class="field"><label>Vencimiento</label><input type="date" id="t-due" class="inp"></div></div>’+
-‘<div class="field"><label>Notas</label><textarea id="t-notes" class="inp" style="height:64px;resize:none" placeholder="Contexto..."></textarea></div>’+
-‘<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">’+
-‘<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>’+
-‘<button class="btn btn-primary" onclick="saveTask()">Crear tarea</button></div></div></div>’;
+  projId=projId||null;
+  const mc=document.getElementById('modal-container');
+  mc.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()">'+
+    '<div class="modal">'+
+    '<div class="modal-title"><h3>Nueva tarea</h3><button class="close-btn" onclick="closeModal()">×</button></div>'+
+    '<div class="field"><label>Título *</label><input id="t-title" class="inp" placeholder="¿Qué hay que hacer?" autofocus></div>'+
+    '<div class="field"><label>Proyecto</label><select id="t-proj" class="inp"><option value="">Sin proyecto</option>'+state.projects.map(function(p){ return '<option value="'+p.id+'"'+(p.id===projId?' selected':'')+'>'+p.name+'</option>'; }).join('')+'</select></div>'+
+    '<div class="grid3">'+
+    '<div class="field"><label>Responsable</label><select id="t-assignee" class="inp">'+USERS.map(function(u){ return '<option'+(u===currentUser?' selected':'')+'>'+u+'</option>'; }).join('')+'</select></div>'+
+    '<div class="field"><label>Prioridad</label><select id="t-priority" class="inp">'+PRIORITIES.map(function(p){ return '<option value="'+p+'"'+(p==='media'?' selected':'')+'>'+p+'</option>'; }).join('')+'</select></div>'+
+    '<div class="field"><label>Vencimiento</label><input type="date" id="t-due" class="inp"></div></div>'+
+    '<div class="field"><label>Notas</label><textarea id="t-notes" class="inp" style="height:64px;resize:none" placeholder="Contexto..."></textarea></div>'+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">'+
+    '<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>'+
+    '<button class="btn btn-primary" onclick="saveTask()">Crear tarea</button></div></div></div>';
 }
 
 async function saveTask(){
-const title=document.getElementById(‘t-title’)?.value.trim();
-if(!title) return;
-const task={id:uid(),title:title,project_id:document.getElementById(‘t-proj’)?.value||null,assignee:document.getElementById(‘t-assignee’)?.value,priority:document.getElementById(‘t-priority’)?.value,due_date:document.getElementById(‘t-due’)?.value||null,notes:document.getElementById(‘t-notes’)?.value||’’,status:‘pendiente’,created_at:new Date().toISOString()};
-closeModal();
-await dbAddTask(task);
+  const title=document.getElementById('t-title')?.value.trim();
+  if(!title) return;
+  const task={id:uid(),title:title,project_id:document.getElementById('t-proj')?.value||null,assignee:document.getElementById('t-assignee')?.value,priority:document.getElementById('t-priority')?.value,due_date:document.getElementById('t-due')?.value||null,notes:document.getElementById('t-notes')?.value||'',status:'pendiente',created_at:new Date().toISOString()};
+  closeModal();
+  await dbAddTask(task);
 }
 
 function openProjectModal(){
-const mc=document.getElementById(‘modal-container’);
-mc.innerHTML=’<div class="modal-overlay" onclick="if(event.target===this)closeModal()">’+
-‘<div class="modal">’+
-‘<div class="modal-title"><h3>Nuevo proyecto</h3><button class="close-btn" onclick="closeModal()">×</button></div>’+
-‘<div class="grid2"><div class="field"><label>Nombre *</label><input id="p-name" class="inp" autofocus></div>’+
-‘<div class="field"><label>Cliente</label><input id="p-client" class="inp"></div></div>’+
-‘<div class="grid2"><div class="field"><label>País / Región</label><input id="p-country" class="inp"></div>’+
-‘<div class="field"><label>Estado</label><select id="p-status" class="inp">’+STATUSES.map(function(s){ return ‘<option value=”’+s+’”’+(s===‘análisis’?’ selected’:’’)+’>’+s+’</option>’; }).join(’’)+’</select></div></div>’+
-‘<div class="grid3"><div class="field"><label>Responsable</label><select id="p-resp" class="inp">’+USERS.map(function(u){ return ‘<option’+(u===currentUser?’ selected’:’’)+’>’+u+’</option>’; }).join(’’)+’</select></div>’+
-‘<div class="field"><label>PM</label><input id="p-pm" class="inp" placeholder="Nombre"></div>’+
-‘<div class="field"><label>SMEs (coma para varios)</label><input id="p-sme" class="inp" placeholder="Hugo Patiño, Daniel Torres"></div></div>’+
-‘<div class="field"><label>Descripción</label><textarea id="p-desc" class="inp" style="height:72px;resize:none"></textarea></div>’+
-‘<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">’+
-‘<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>’+
-‘<button class="btn btn-primary" onclick="saveProject()">Crear proyecto</button></div></div></div>’;
+  const mc=document.getElementById('modal-container');
+  mc.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()">'+
+    '<div class="modal">'+
+    '<div class="modal-title"><h3>Nuevo proyecto</h3><button class="close-btn" onclick="closeModal()">×</button></div>'+
+    '<div class="grid2"><div class="field"><label>Nombre *</label><input id="p-name" class="inp" autofocus></div>'+
+    '<div class="field"><label>Cliente</label><input id="p-client" class="inp"></div></div>'+
+    '<div class="grid2"><div class="field"><label>País / Región</label><input id="p-country" class="inp"></div>'+
+    '<div class="field"><label>Estado</label><select id="p-status" class="inp">'+STATUSES.map(function(s){ return '<option value="'+s+'"'+(s==='análisis'?' selected':'')+'>'+s+'</option>'; }).join('')+'</select></div></div>'+
+    '<div class="grid3"><div class="field"><label>Responsable</label><select id="p-resp" class="inp">'+USERS.map(function(u){ return '<option'+(u===currentUser?' selected':'')+'>'+u+'</option>'; }).join('')+'</select></div>'+
+    '<div class="field"><label>PM</label><input id="p-pm" class="inp" placeholder="Nombre"></div>'+
+    '<div class="field"><label>SMEs (coma para varios)</label><input id="p-sme" class="inp" placeholder="Hugo Patiño, Daniel Torres"></div></div>'+
+    '<div class="field"><label>Descripción</label><textarea id="p-desc" class="inp" style="height:72px;resize:none"></textarea></div>'+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">'+
+    '<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>'+
+    '<button class="btn btn-primary" onclick="saveProject()">Crear proyecto</button></div></div></div>';
 }
 
 async function saveProject(){
-const name=document.getElementById(‘p-name’)?.value.trim();
-if(!name) return;
-const proj={id:uid(),name:name,client:document.getElementById(‘p-client’)?.value||’’,status:document.getElementById(‘p-status’)?.value,responsible:document.getElementById(‘p-resp’)?.value,pm:document.getElementById(‘p-pm’)?.value||null,sme:document.getElementById(‘p-sme’)?.value||null,country:document.getElementById(‘p-country’)?.value||’’,description:document.getElementById(‘p-desc’)?.value||’’,tags:[],created_at:new Date().toISOString()};
-closeModal();
-await dbAddProject(proj);
+  const name=document.getElementById('p-name')?.value.trim();
+  if(!name) return;
+  const proj={id:uid(),name:name,client:document.getElementById('p-client')?.value||'',status:document.getElementById('p-status')?.value,responsible:document.getElementById('p-resp')?.value,pm:document.getElementById('p-pm')?.value||null,sme:document.getElementById('p-sme')?.value||null,country:document.getElementById('p-country')?.value||'',description:document.getElementById('p-desc')?.value||'',tags:[],created_at:new Date().toISOString()};
+  closeModal();
+  await dbAddProject(proj);
 }
 
 function openMeetingModal(){
-const mc=document.getElementById(‘modal-container’);
-mc.innerHTML=’<div class="modal-overlay" onclick="if(event.target===this)closeModal()">’+
-‘<div class="modal" style="width:540px">’+
-‘<div class="modal-title"><h3>Registrar reunión</h3><button class="close-btn" onclick="closeModal()">×</button></div>’+
-‘<div class="field"><label>Título *</label><input id="m-title" class="inp" placeholder="¿De qué fue?" autofocus></div>’+
-‘<div class="grid3">’+
-‘<div class="field"><label>Proyecto</label><select id="m-proj" class="inp"><option value="">General / Interno</option>’+state.projects.map(function(p){ return ‘<option value="'+p.id+'">’+p.name+’</option>’; }).join(’’)+’</select></div>’+
-‘<div class="field"><label>Tipo</label><select id="m-type" class="inp">’+MEETING_TYPES.map(function(t){ return ‘<option>’+t+’</option>’; }).join(’’)+’</select></div>’+
-‘<div class="field"><label>Fecha</label><input type="date" id="m-date" class="inp" value="'+today()+'"></div></div>’+
-‘<div class="field"><label>Socios presentes</label>’+
-‘<div style="display:flex;gap:8px">’+USERS.map(function(u){ return ‘<button type="button" id="att-'+u+'" onclick="toggleAtt(\''+u+'\')" style="background:'+(u===currentUser?USER_COLORS[u]+'28':'#13131f')+';border:1.5px solid '+(u===currentUser?USER_COLORS[u]:'#252540')+';border-radius:7px;color:'+(u===currentUser?USER_COLORS[u]:'#6b7280')+';font-size:12px;font-weight:700;padding:6px 14px;cursor:pointer;font-family:inherit">’+u+’</button>’; }).join(’’)+’</div></div>’+
-‘<div class="field"><label>Externos (opcional)</label><input id="m-ext" class="inp" placeholder="Ej: Hugo Patiño, Daniel Torres"></div>’+
-‘<div class="field"><label>Notas y acuerdos</label><textarea id="m-notes" class="inp" style="height:100px;resize:vertical" placeholder="Pegá las notas de la reunión..."></textarea></div>’+
-‘<div style="background:#6366f110;border:1px solid #6366f128;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#a5b4fc">’+
-‘💡 <b>Tip:</b> Después de guardar, tocá “Extraer tareas con IA”. Las notas también se indexan automáticamente para búsquedas en Match.</div>’+
-‘<div style="display:flex;gap:8px;justify-content:flex-end">’+
-‘<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>’+
-‘<button class="btn btn-primary" onclick="saveMeeting()">Guardar reunión</button></div></div></div>’;
-window._meetingAttendees=[currentUser];
+  const mc=document.getElementById('modal-container');
+  mc.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()">'+
+    '<div class="modal" style="width:540px">'+
+    '<div class="modal-title"><h3>Registrar reunión</h3><button class="close-btn" onclick="closeModal()">×</button></div>'+
+    '<div class="field"><label>Título *</label><input id="m-title" class="inp" placeholder="¿De qué fue?" autofocus></div>'+
+    '<div class="grid3">'+
+    '<div class="field"><label>Proyecto</label><select id="m-proj" class="inp"><option value="">General / Interno</option>'+state.projects.map(function(p){ return '<option value="'+p.id+'">'+p.name+'</option>'; }).join('')+'</select></div>'+
+    '<div class="field"><label>Tipo</label><select id="m-type" class="inp">'+MEETING_TYPES.map(function(t){ return '<option>'+t+'</option>'; }).join('')+'</select></div>'+
+    '<div class="field"><label>Fecha</label><input type="date" id="m-date" class="inp" value="'+today()+'"></div></div>'+
+    '<div class="field"><label>Socios presentes</label>'+
+    '<div style="display:flex;gap:8px">'+USERS.map(function(u){ return '<button type="button" id="att-'+u+'" onclick="toggleAtt(\''+u+'\')" style="background:'+(u===currentUser?USER_COLORS[u]+'28':'#13131f')+';border:1.5px solid '+(u===currentUser?USER_COLORS[u]:'#252540')+';border-radius:7px;color:'+(u===currentUser?USER_COLORS[u]:'#6b7280')+';font-size:12px;font-weight:700;padding:6px 14px;cursor:pointer;font-family:inherit">'+u+'</button>'; }).join('')+'</div></div>'+
+    '<div class="field"><label>Externos (opcional)</label><input id="m-ext" class="inp" placeholder="Ej: Hugo Patiño, Daniel Torres"></div>'+
+    '<div class="field"><label>Notas y acuerdos</label><textarea id="m-notes" class="inp" style="height:100px;resize:vertical" placeholder="Pegá las notas de la reunión..."></textarea></div>'+
+    '<div style="background:#6366f110;border:1px solid #6366f128;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#a5b4fc">'+
+    '💡 <b>Tip:</b> Después de guardar, tocá "Extraer tareas con IA". Las notas también se indexan automáticamente para búsquedas en Match.</div>'+
+    '<div style="display:flex;gap:8px;justify-content:flex-end">'+
+    '<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>'+
+    '<button class="btn btn-primary" onclick="saveMeeting()">Guardar reunión</button></div></div></div>';
+  window._meetingAttendees=[currentUser];
 }
 
 let _meetingAttendees=[currentUser];
 function toggleAtt(u){
-if(!window._meetingAttendees) window._meetingAttendees=[currentUser];
-const i=window._meetingAttendees.indexOf(u);
-if(i>=0) window._meetingAttendees.splice(i,1); else window._meetingAttendees.push(u);
-const btn=document.getElementById(‘att-’+u);
-if(btn){ const active=window._meetingAttendees.includes(u); btn.style.background=active?USER_COLORS[u]+‘28’:’#13131f’; btn.style.borderColor=active?USER_COLORS[u]:’#252540’; btn.style.color=active?USER_COLORS[u]:’#6b7280’; }
+  if(!window._meetingAttendees) window._meetingAttendees=[currentUser];
+  const i=window._meetingAttendees.indexOf(u);
+  if(i>=0) window._meetingAttendees.splice(i,1); else window._meetingAttendees.push(u);
+  const btn=document.getElementById('att-'+u);
+  if(btn){ const active=window._meetingAttendees.includes(u); btn.style.background=active?USER_COLORS[u]+'28':'#13131f'; btn.style.borderColor=active?USER_COLORS[u]:'#252540'; btn.style.color=active?USER_COLORS[u]:'#6b7280'; }
 }
 
 async function saveMeeting(){
-const title=document.getElementById(‘m-title’)?.value.trim();
-if(!title) return;
-const meeting={id:uid(),title:title,project_id:document.getElementById(‘m-proj’)?.value||null,type:document.getElementById(‘m-type’)?.value,date:document.getElementById(‘m-date’)?.value,attendees:window._meetingAttendees||[currentUser],external_attendees:document.getElementById(‘m-ext’)?.value||’’,notes:document.getElementById(‘m-notes’)?.value||’’,tasks_generated:[],created_at:new Date().toISOString()};
-closeModal();
-await dbAddMeeting(meeting);
+  const title=document.getElementById('m-title')?.value.trim();
+  if(!title) return;
+  const meeting={id:uid(),title:title,project_id:document.getElementById('m-proj')?.value||null,type:document.getElementById('m-type')?.value,date:document.getElementById('m-date')?.value,attendees:window._meetingAttendees||[currentUser],external_attendees:document.getElementById('m-ext')?.value||'',notes:document.getElementById('m-notes')?.value||'',tasks_generated:[],created_at:new Date().toISOString()};
+  closeModal();
+  await dbAddMeeting(meeting);
 }
 
 function openEditTaskModal(id){
-const t=state.tasks.find(function(x){ return x.id===id; });
-if(!t) return;
-const mc=document.getElementById(‘modal-container’);
-mc.innerHTML=’<div class="modal-overlay" onclick="if(event.target===this)closeModal()">’+
-‘<div class="modal">’+
-‘<div class="modal-title"><h3>Editar tarea</h3><button class="close-btn" onclick="closeModal()">×</button></div>’+
-‘<div class="field"><label>Título *</label><input id="et-title" class="inp" value="'+t.title+'" autofocus></div>’+
-‘<div class="field"><label>Proyecto</label><select id="et-proj" class="inp"><option value="">Sin proyecto</option>’+state.projects.map(function(p){ return ‘<option value=”’+p.id+’”’+(p.id===t.project_id?’ selected’:’’)+’>’+p.name+’</option>’; }).join(’’)+’</select></div>’+
-‘<div class="grid3">’+
-‘<div class="field"><label>Responsable</label><select id="et-assignee" class="inp">’+USERS.map(function(u){ return ‘<option value=”’+u+’”’+(u===t.assignee?’ selected’:’’)+’>’+u+’</option>’; }).join(’’)+’</select></div>’+
-‘<div class="field"><label>Prioridad</label><select id="et-priority" class="inp">’+PRIORITIES.map(function(p){ return ‘<option value=”’+p+’”’+(p===t.priority?’ selected’:’’)+’>’+p+’</option>’; }).join(’’)+’</select></div>’+
-‘<div class="field"><label>Vencimiento</label><input type="date" id="et-due" class="inp" value="'+(t.due_date||'')+'"></div></div>’+
-‘<div class="field"><label>Estado</label><select id="et-status" class="inp">’+TASK_STATUSES.map(function(s){ return ‘<option value=”’+s+’”’+(s===t.status?’ selected’:’’)+’>’+s+’</option>’; }).join(’’)+’</select></div>’+
-‘<div class="field"><label>Notas</label><textarea id="et-notes" class="inp" style="height:64px;resize:none">’+(t.notes||’’)+’</textarea></div>’+
-‘<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">’+
-‘<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>’+
-‘<button class="btn btn-primary" onclick="saveEditTask(\''+id+'\')">Guardar</button></div></div></div>’;
+  const t=state.tasks.find(function(x){ return x.id===id; });
+  if(!t) return;
+  const mc=document.getElementById('modal-container');
+  mc.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()">'+
+    '<div class="modal">'+
+    '<div class="modal-title"><h3>Editar tarea</h3><button class="close-btn" onclick="closeModal()">×</button></div>'+
+    '<div class="field"><label>Título *</label><input id="et-title" class="inp" value="'+t.title+'" autofocus></div>'+
+    '<div class="field"><label>Proyecto</label><select id="et-proj" class="inp"><option value="">Sin proyecto</option>'+state.projects.map(function(p){ return '<option value="'+p.id+'"'+(p.id===t.project_id?' selected':'')+'>'+p.name+'</option>'; }).join('')+'</select></div>'+
+    '<div class="grid3">'+
+    '<div class="field"><label>Responsable</label><select id="et-assignee" class="inp">'+USERS.map(function(u){ return '<option value="'+u+'"'+(u===t.assignee?' selected':'')+'>'+u+'</option>'; }).join('')+'</select></div>'+
+    '<div class="field"><label>Prioridad</label><select id="et-priority" class="inp">'+PRIORITIES.map(function(p){ return '<option value="'+p+'"'+(p===t.priority?' selected':'')+'>'+p+'</option>'; }).join('')+'</select></div>'+
+    '<div class="field"><label>Vencimiento</label><input type="date" id="et-due" class="inp" value="'+(t.due_date||'')+'"></div></div>'+
+    '<div class="field"><label>Estado</label><select id="et-status" class="inp">'+TASK_STATUSES.map(function(s){ return '<option value="'+s+'"'+(s===t.status?' selected':'')+'>'+s+'</option>'; }).join('')+'</select></div>'+
+    '<div class="field"><label>Notas</label><textarea id="et-notes" class="inp" style="height:64px;resize:none">'+(t.notes||'')+'</textarea></div>'+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">'+
+    '<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>'+
+    '<button class="btn btn-primary" onclick="saveEditTask(\''+id+'\')">Guardar</button></div></div></div>';
 }
 
 async function saveEditTask(id){
-const title=document.getElementById(‘et-title’)?.value.trim();
-if(!title) return;
-const changes={title:title,project_id:document.getElementById(‘et-proj’)?.value||null,assignee:document.getElementById(‘et-assignee’)?.value,priority:document.getElementById(‘et-priority’)?.value,due_date:document.getElementById(‘et-due’)?.value||null,notes:document.getElementById(‘et-notes’)?.value||’’,status:document.getElementById(‘et-status’)?.value};
-closeModal();
-await dbUpdateTask(id,changes);
+  const title=document.getElementById('et-title')?.value.trim();
+  if(!title) return;
+  const changes={title:title,project_id:document.getElementById('et-proj')?.value||null,assignee:document.getElementById('et-assignee')?.value,priority:document.getElementById('et-priority')?.value,due_date:document.getElementById('et-due')?.value||null,notes:document.getElementById('et-notes')?.value||'',status:document.getElementById('et-status')?.value};
+  closeModal();
+  await dbUpdateTask(id,changes);
 }
 
 function openEditProjectModal(id){
-const p=state.projects.find(function(x){ return x.id===id; });
-if(!p) return;
-const smeVal=Array.isArray(p.sme)?p.sme.join(’, ‘):(p.sme||’’);
-const mc=document.getElementById(‘modal-container’);
-mc.innerHTML=’<div class="modal-overlay" onclick="if(event.target===this)closeModal()">’+
-‘<div class="modal">’+
-‘<div class="modal-title"><h3>Editar proyecto</h3><button class="close-btn" onclick="closeModal()">×</button></div>’+
-‘<div class="grid2"><div class="field"><label>Nombre *</label><input id="ep-name" class="inp" value="'+p.name+'" autofocus></div>’+
-‘<div class="field"><label>Cliente</label><input id="ep-client" class="inp" value="'+(p.client||'')+'"></div></div>’+
-‘<div class="grid2"><div class="field"><label>País / Región</label><input id="ep-country" class="inp" value="'+(p.country||'')+'"></div>’+
-‘<div class="field"><label>Estado</label><select id="ep-status" class="inp">’+STATUSES.map(function(s){ return ‘<option value=”’+s+’”’+(s===p.status?’ selected’:’’)+’>’+s+’</option>’; }).join(’’)+’</select></div></div>’+
-‘<div class="grid3"><div class="field"><label>Responsable</label><select id="ep-resp" class="inp">’+USERS.map(function(u){ return ‘<option value=”’+u+’”’+(u===p.responsible?’ selected’:’’)+’>’+u+’</option>’; }).join(’’)+’</select></div>’+
-‘<div class="field"><label>PM</label><input id="ep-pm" class="inp" value="'+(p.pm||'')+'"></div>’+
-‘<div class="field"><label>SMEs (coma para varios)</label><input id="ep-sme" class="inp" value="'+smeVal+'" placeholder="Hugo Patiño, Daniel Torres"></div></div>’+
-‘<div class="field"><label>Descripción</label><textarea id="ep-desc" class="inp" style="height:72px;resize:none">’+(p.description||’’)+’</textarea></div>’+
-‘<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">’+
-‘<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>’+
-‘<button class="btn btn-primary" onclick="saveEditProject(\''+id+'\')">Guardar</button></div></div></div>’;
+  const p=state.projects.find(function(x){ return x.id===id; });
+  if(!p) return;
+  const smeVal=Array.isArray(p.sme)?p.sme.join(', '):(p.sme||'');
+  const mc=document.getElementById('modal-container');
+  mc.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()">'+
+    '<div class="modal">'+
+    '<div class="modal-title"><h3>Editar proyecto</h3><button class="close-btn" onclick="closeModal()">×</button></div>'+
+    '<div class="grid2"><div class="field"><label>Nombre *</label><input id="ep-name" class="inp" value="'+p.name+'" autofocus></div>'+
+    '<div class="field"><label>Cliente</label><input id="ep-client" class="inp" value="'+(p.client||'')+'"></div></div>'+
+    '<div class="grid2"><div class="field"><label>País / Región</label><input id="ep-country" class="inp" value="'+(p.country||'')+'"></div>'+
+    '<div class="field"><label>Estado</label><select id="ep-status" class="inp">'+STATUSES.map(function(s){ return '<option value="'+s+'"'+(s===p.status?' selected':'')+'>'+s+'</option>'; }).join('')+'</select></div></div>'+
+    '<div class="grid3"><div class="field"><label>Responsable</label><select id="ep-resp" class="inp">'+USERS.map(function(u){ return '<option value="'+u+'"'+(u===p.responsible?' selected':'')+'>'+u+'</option>'; }).join('')+'</select></div>'+
+    '<div class="field"><label>PM</label><input id="ep-pm" class="inp" value="'+(p.pm||'')+'"></div>'+
+    '<div class="field"><label>SMEs (coma para varios)</label><input id="ep-sme" class="inp" value="'+smeVal+'" placeholder="Hugo Patiño, Daniel Torres"></div></div>'+
+    '<div class="field"><label>Descripción</label><textarea id="ep-desc" class="inp" style="height:72px;resize:none">'+(p.description||'')+'</textarea></div>'+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">'+
+    '<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>'+
+    '<button class="btn btn-primary" onclick="saveEditProject(\''+id+'\')">Guardar</button></div></div></div>';
 }
 
 async function saveEditProject(id){
-const name=document.getElementById(‘ep-name’)?.value.trim();
-if(!name) return;
-const smeRaw=document.getElementById(‘ep-sme’)?.value||’’;
-const sme=smeRaw.includes(’,’)?smeRaw.split(’,’).map(function(s){ return s.trim(); }).filter(Boolean):smeRaw.trim()||null;
-const changes={name:name,client:document.getElementById(‘ep-client’)?.value||’’,status:document.getElementById(‘ep-status’)?.value,responsible:document.getElementById(‘ep-resp’)?.value,pm:document.getElementById(‘ep-pm’)?.value||null,sme:sme,country:document.getElementById(‘ep-country’)?.value||’’,description:document.getElementById(‘ep-desc’)?.value||’’};
-closeModal();
-await dbUpdateProject(id,changes);
+  const name=document.getElementById('ep-name')?.value.trim();
+  if(!name) return;
+  const smeRaw=document.getElementById('ep-sme')?.value||'';
+  const sme=smeRaw.includes(',')?smeRaw.split(',').map(function(s){ return s.trim(); }).filter(Boolean):smeRaw.trim()||null;
+  const changes={name:name,client:document.getElementById('ep-client')?.value||'',status:document.getElementById('ep-status')?.value,responsible:document.getElementById('ep-resp')?.value,pm:document.getElementById('ep-pm')?.value||null,sme:sme,country:document.getElementById('ep-country')?.value||'',description:document.getElementById('ep-desc')?.value||''};
+  closeModal();
+  await dbUpdateProject(id,changes);
 }
 
 function openEditMeetingModal(id){
-const m=state.meetings.find(function(x){ return x.id===id; });
-if(!m) return;
-const mc=document.getElementById(‘modal-container’);
-mc.innerHTML=’<div class="modal-overlay" onclick="if(event.target===this)closeModal()">’+
-‘<div class="modal" style="width:540px">’+
-‘<div class="modal-title"><h3>Editar reunión</h3><button class="close-btn" onclick="closeModal()">×</button></div>’+
-‘<div class="field"><label>Título *</label><input id="em-title" class="inp" value="'+m.title+'" autofocus></div>’+
-‘<div class="grid3">’+
-‘<div class="field"><label>Proyecto</label><select id="em-proj" class="inp"><option value="">General</option>’+state.projects.map(function(p){ return ‘<option value=”’+p.id+’”’+(p.id===m.project_id?’ selected’:’’)+’>’+p.name+’</option>’; }).join(’’)+’</select></div>’+
-‘<div class="field"><label>Tipo</label><select id="em-type" class="inp">’+MEETING_TYPES.map(function(t){ return ‘<option value=”’+t+’”’+(t===m.type?’ selected’:’’)+’>’+t+’</option>’; }).join(’’)+’</select></div>’+
-‘<div class="field"><label>Fecha</label><input type="date" id="em-date" class="inp" value="'+(m.date||'')+'"></div></div>’+
-‘<div class="field"><label>Externos</label><input id="em-ext" class="inp" value="'+(m.external_attendees||'')+'"></div>’+
-‘<div class="field"><label>Notas</label><textarea id="em-notes" class="inp" style="height:100px;resize:vertical">’+(m.notes||’’)+’</textarea></div>’+
-‘<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">’+
-‘<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>’+
-‘<button class="btn btn-primary" onclick="saveEditMeeting(\''+id+'\')">Guardar</button></div></div></div>’;
+  const m=state.meetings.find(function(x){ return x.id===id; });
+  if(!m) return;
+  const mc=document.getElementById('modal-container');
+  mc.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()">'+
+    '<div class="modal" style="width:540px">'+
+    '<div class="modal-title"><h3>Editar reunión</h3><button class="close-btn" onclick="closeModal()">×</button></div>'+
+    '<div class="field"><label>Título *</label><input id="em-title" class="inp" value="'+m.title+'" autofocus></div>'+
+    '<div class="grid3">'+
+    '<div class="field"><label>Proyecto</label><select id="em-proj" class="inp"><option value="">General</option>'+state.projects.map(function(p){ return '<option value="'+p.id+'"'+(p.id===m.project_id?' selected':'')+'>'+p.name+'</option>'; }).join('')+'</select></div>'+
+    '<div class="field"><label>Tipo</label><select id="em-type" class="inp">'+MEETING_TYPES.map(function(t){ return '<option value="'+t+'"'+(t===m.type?' selected':'')+'>'+t+'</option>'; }).join('')+'</select></div>'+
+    '<div class="field"><label>Fecha</label><input type="date" id="em-date" class="inp" value="'+(m.date||'')+'"></div></div>'+
+    '<div class="field"><label>Externos</label><input id="em-ext" class="inp" value="'+(m.external_attendees||'')+'"></div>'+
+    '<div class="field"><label>Notas</label><textarea id="em-notes" class="inp" style="height:100px;resize:vertical">'+(m.notes||'')+'</textarea></div>'+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">'+
+    '<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>'+
+    '<button class="btn btn-primary" onclick="saveEditMeeting(\''+id+'\')">Guardar</button></div></div></div>';
 }
 
 async function saveEditMeeting(id){
-const title=document.getElementById(‘em-title’)?.value.trim();
-if(!title) return;
-const changes={title:title,project_id:document.getElementById(‘em-proj’)?.value||null,type:document.getElementById(‘em-type’)?.value,date:document.getElementById(‘em-date’)?.value,external_attendees:document.getElementById(‘em-ext’)?.value||’’,notes:document.getElementById(‘em-notes’)?.value||’’};
-closeModal();
-await dbUpdateMeeting(id,changes);
+  const title=document.getElementById('em-title')?.value.trim();
+  if(!title) return;
+  const changes={title:title,project_id:document.getElementById('em-proj')?.value||null,type:document.getElementById('em-type')?.value,date:document.getElementById('em-date')?.value,external_attendees:document.getElementById('em-ext')?.value||'',notes:document.getElementById('em-notes')?.value||''};
+  closeModal();
+  await dbUpdateMeeting(id,changes);
 }
 
-function closeModal(){ document.getElementById(‘modal-container’).innerHTML=’’; }
+function closeModal(){ document.getElementById('modal-container').innerHTML=''; }
 
 function bindEvents(){
-const inp=document.getElementById(‘agent-input’);
-if(inp){ inp.addEventListener(‘keydown’,function(e){ if(e.key===‘Enter’&&!e.shiftKey){ e.preventDefault(); submitAgentFromInput(); } }); }
-document.addEventListener(‘keydown’,function(e){ if(e.key===‘Escape’) closeModal(); },{once:true});
+  const inp=document.getElementById('agent-input');
+  if(inp){ inp.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); submitAgentFromInput(); } }); }
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeModal(); },{once:true});
 }
 
 function toggleTask(id,currentStatus){
-const newStatus=currentStatus===‘completada’?‘pendiente’:‘completada’;
-dbUpdateTask(id,{status:newStatus});
+  const newStatus=currentStatus==='completada'?'pendiente':'completada';
+  dbUpdateTask(id,{status:newStatus});
 }
 function changeTaskStatus(id,status){ dbUpdateTask(id,{status:status}); }
 function toggleProject(id){ selProject=selProject===id?null:id; render(); }
-function goToProject(id){ selProject=id; setView(‘projects’); }
+function goToProject(id){ selProject=id; setView('projects'); }
 
 async function init(){
-await loadAll();
-document.getElementById(‘loading’).style.display=‘none’;
-render();
+  await loadAll();
+  document.getElementById('loading').style.display='none';
+  render();
 }
 init();
 </script>
-
 </body>
 </html>
