@@ -7,55 +7,55 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{min-height:100vh;background:#09090f;color:#e8e8f0;font-family:'DM Sans','Segoe UI',system-ui,sans-serif;display:flex;flex-direction:column}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#252540;border-radius:10px}
-input,select,textarea{font-family:inherit;outline:none;color:#e8e8f0}
-select option{background:#13131f}
-input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.4)}
+body{min-height:100vh;background:#f0f0f5;color:#1a1a2e;font-family:'DM Sans','Segoe UI',system-ui,sans-serif;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#d0d0e0;border-radius:10px}
+input,select,textarea{font-family:inherit;outline:none;color:#1a1a2e}
+select option{background:#ffffff}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:none}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
-#header{border-bottom:1px solid #1a1a2e;padding:0 20px;background:#0c0c18;position:sticky;top:0;z-index:100;display:flex;align-items:center;height:52px;gap:0}
-#logo{font-weight:900;font-size:17px;letter-spacing:-.04em;margin-right:20px;color:#fff;flex-shrink:0}
+#header{border-bottom:1px solid #e2e2ec;padding:0 20px;background:#ffffff;position:sticky;top:0;z-index:100;display:flex;align-items:center;height:52px;gap:0}
+#logo{font-weight:900;font-size:17px;letter-spacing:-.04em;margin-right:20px;color:#1a1a2e;flex-shrink:0}
 #logo span{color:#6366f1}
 #nav{display:flex;gap:2px;flex:1}
-.nav-btn{background:transparent;border:none;border-bottom:2px solid transparent;color:#6b7280;padding:0 12px;height:52px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;font-family:inherit}
-.nav-btn.active{background:#6366f115;border-bottom-color:#6366f1;color:#a5b4fc}
+.nav-btn{background:transparent;border:none;border-bottom:2px solid transparent;color:#9ca3af;padding:0 12px;height:52px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;font-family:inherit}
+.nav-btn.active{background:#eef2ff;border-bottom-color:#6366f1;color:#4f46e5}
 #user-switcher{display:flex;align-items:center;gap:6px;flex-shrink:0}
 #user-switcher span{font-size:11px;color:#4b5563}
-.user-btn{background:transparent;border:1px solid #1e1e2e;border-radius:20px;color:#6b7280;font-size:11px;font-weight:700;padding:4px 12px;cursor:pointer;transition:all .15s;font-family:inherit}
+.user-btn{background:transparent;border:1px solid #e8e8f0;border-radius:20px;color:#6b7280;font-size:11px;font-weight:700;padding:4px 12px;cursor:pointer;transition:all .15s;font-family:inherit}
 .user-btn.active-sasan{background:#818cf820;border-color:#818cf860;color:#818cf8}
 .user-btn.active-jorge{background:#38bdf820;border-color:#38bdf860;color:#38bdf8}
 .user-btn.active-juan{background:#34d39920;border-color:#34d39960;color:#34d399}
 #content{flex:1;padding:28px;max-width:1140px;margin:0 auto;width:100%}
-.card{background:#0c0c18;border:1px solid #1a1a2e;border-radius:11px;padding:16px}
-.card-sm{background:#0d0d18;border:1px solid #1e1e2e;border-radius:9px;padding:11px 14px}
+.card{background:#ffffff;border:1px solid #e2e2ec;border-radius:11px;padding:16px}
+.card-sm{background:#f8f8fc;border:1px solid #e8e8f0;border-radius:9px;padding:11px 14px}
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
-.stat{background:#0c0c18;border:1px solid #1a1a2e;border-radius:11px;padding:18px 20px}
+.stat{background:#ffffff;border:1px solid #e2e2ec;border-radius:11px;padding:18px 20px}
 .stat-value{font-size:30px;font-weight:900;letter-spacing:-.05em;line-height:1}
 .stat-label{font-size:11px;color:#6b7280;margin-top:5px;text-transform:uppercase;letter-spacing:.07em}
 .chip{display:inline-block;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;border:1px solid transparent}
 .pill{display:inline-block;border-radius:20px;padding:2px 9px;font-size:11px;font-weight:600;white-space:nowrap}
-.bar-wrap{height:3px;background:#1e1e2e;border-radius:2px}
+.bar-wrap{height:3px;background:#e8e8f0;border-radius:2px}
 .bar-fill{height:3px;border-radius:2px;transition:width .3s}
 .alert{border-radius:9px;padding:11px 16px;font-size:13px;display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.alert-red{background:#ef444410;border:1px solid #ef444430;color:#fca5a5}
-.alert-orange{background:#f9731610;border:1px solid #f9731630;color:#fdba74}
+.alert-red{background:#fef2f2;border:1px solid #fecaca;color:#dc2626}
+.alert-orange{background:#fff7ed;border:1px solid #fed7aa;color:#c2410c}
 .modal-overlay{position:fixed;inset:0;background:#000b;z-index:300;display:flex;align-items:center;justify-content:center;padding:20px}
-.modal{background:#0f0f1a;border:1px solid #252540;border-radius:14px;padding:24px;width:500px;max-width:95vw;max-height:85vh;overflow-y:auto;box-shadow:0 25px 60px #0008}
+.modal{background:#ffffff;border:1px solid #dcdcec;border-radius:14px;padding:24px;width:500px;max-width:95vw;max-height:85vh;overflow-y:auto;box-shadow:0 25px 60px #0008}
 .modal-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
 .modal-title h3{font-size:15px;font-weight:800}
-.close-btn{background:#1e1e2e;border:none;color:#9ca3af;cursor:pointer;border-radius:6px;width:28px;height:28px;font-size:16px;display:flex;align-items:center;justify-content:center}
+.close-btn{background:#1e1e2e;border:none;color:#6b7280;cursor:pointer;border-radius:6px;width:28px;height:28px;font-size:16px;display:flex;align-items:center;justify-content:center}
 .field{margin-bottom:14px}
 .field label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;display:block;margin-bottom:6px}
-.inp{width:100%;background:#13131f;border:1px solid #252540;border-radius:7px;color:#e8e8f0;font-size:13px;padding:8px 10px;font-family:inherit}
+.inp{width:100%;background:#f3f3f8;border:1px solid #dcdcec;border-radius:7px;color:#1a1a2e;font-size:13px;padding:8px 10px;font-family:inherit}
 .inp:focus{border-color:#6366f160}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .btn{border:none;border-radius:8px;font-size:12px;font-weight:700;padding:9px 16px;cursor:pointer;font-family:inherit;transition:opacity .15s}
 .btn-primary{background:#6366f1;color:#fff}
-.btn-secondary{background:#1e1e2e;color:#9ca3af}
+.btn-secondary{background:#f0f0f5;color:#6b7280}
 .btn-sm{padding:5px 12px;font-size:11px;border-radius:6px}
-.task-card{background:#0d0d18;border:1px solid #1e1e2e;border-radius:9px;padding:11px 14px;display:flex;align-items:flex-start;gap:10px;transition:border-color .15s}
+.task-card{background:#f8f8fc;border:1px solid #e8e8f0;border-radius:9px;padding:11px 14px;display:flex;align-items:flex-start;gap:10px;transition:border-color .15s}
 .task-card.overdue{border-color:#ef444428}
 .task-card.done{opacity:.5}
 .checkbox{width:17px;height:17px;border-radius:5px;border:2px solid #374151;background:transparent;flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s}
@@ -67,14 +67,14 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.4)}
 .msg-ai{display:flex;justify-content:flex-start;align-items:flex-end;gap:8px}
 .msg-bubble{max-width:75%;border-radius:14px;padding:11px 15px;font-size:13px;line-height:1.65;white-space:pre-wrap;font-family:inherit}
 .msg-bubble.user{background:#6366f1;color:#fff;border-radius:14px 14px 4px 14px}
-.msg-bubble.ai{background:#0c0c18;border:1px solid #1a1a2e;color:#e8e8f0;border-radius:14px 14px 14px 4px}
+.msg-bubble.ai{background:#ffffff;border:1px solid #e2e2ec;color:#1a1a2e;border-radius:14px 14px 14px 4px}
 .ai-icon{width:28px;height:28px;border-radius:50%;background:#6366f120;border:1.5px solid #6366f140;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
-#loading{position:fixed;inset:0;background:#09090f;z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+#loading{position:fixed;inset:0;background:#f0f0f5;z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
 .spinner{width:32px;height:32px;border:3px solid #1e1e2e;border-top-color:#6366f1;border-radius:50%;animation:spin 1s linear infinite}
-.match-card{background:#0c0c18;border:1px solid #1a1a2e;border-radius:11px;padding:16px;margin-bottom:12px}
-.score-bar{height:6px;border-radius:3px;background:#1e1e2e;margin:8px 0}
+.match-card{background:#ffffff;border:1px solid #e2e2ec;border-radius:11px;padding:16px;margin-bottom:12px}
+.score-bar{height:6px;border-radius:3px;background:#e8e8f0;margin:8px 0}
 .score-fill{height:6px;border-radius:3px;transition:width .5s}
-.sync-progress-bar{height:6px;background:#1e1e2e;border-radius:3px;margin-top:8px;overflow:hidden}
+.sync-progress-bar{height:6px;background:#e8e8f0;border-radius:3px;margin-top:8px;overflow:hidden}
 .sync-progress-fill{height:6px;background:#6366f1;border-radius:3px;transition:width .3s}
 </style>
 </head>
@@ -97,6 +97,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.4)}
     <button class="nav-btn" onclick="setView('agent')">&#x2726; Agente IA</button>
     <button class="nav-btn" onclick="setView('crm')">&#x25C9; CRM</button>
     <button class="nav-btn" onclick="setView('match')">&#x27E1; Match</button>
+    <button class="nav-btn" onclick="setView('leads')">&#x25B6; Leads</button>
   </nav>
   <div id="user-switcher">
     <span>Vista:</span>
@@ -131,6 +132,9 @@ let matchQuery = '';
 let syncProgress = null;
 let syncTotal = 0;
 let syncIndexed = 0;
+let leadsData = [];
+let leadsLoading = false;
+let leadsSearch = '';
 
 const USERS = ['Sasan','Jorge','Juan'];
 const STATUSES = ['backlog','análisis','ejecución','terminado'];
@@ -142,6 +146,8 @@ const STATUS_COLORS = {backlog:'#6b7280',análisis:'#f59e0b',ejecución:'#6366f1
 const PRIORITY_COLORS = {urgente:'#ef4444',alta:'#f97316',media:'#eab308',baja:'#6b7280'};
 const TASK_STATUS_COLORS = {pendiente:'#6b7280','en progreso':'#6366f1',bloqueada:'#ef4444',completada:'#10b981'};
 const MEET_COLORS = {socios:'#818cf8',pm:'#38bdf8',sme:'#a78bfa',cliente:'#34d399',externa:'#f59e0b'};
+const LEAD_STAGES = ['Nuevo','En conversación','Propuesta enviada','Negociación','Cerrado ganado','Cerrado perdido'];
+const LEAD_STAGE_COLORS = {'Nuevo':'#6366f1','En conversación':'#38bdf8','Propuesta enviada':'#f59e0b','Negociación':'#f97316','Cerrado ganado':'#10b981','Cerrado perdido':'#ef4444'};
 
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function today(){ return new Date().toISOString().split('T')[0]; }
@@ -238,7 +244,7 @@ async function indexMeeting(m){
 function setView(v){
   currentView=v; selProject=null;
   document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); });
-  const idx={dashboard:0,projects:1,tasks:2,meetings:3,agent:4,crm:5,match:6}[v];
+  const idx={dashboard:0,projects:1,tasks:2,meetings:3,agent:4,crm:5,match:6,leads:7}[v];
   const btns=document.querySelectorAll('.nav-btn');
   if(btns[idx]) btns[idx].classList.add('active');
   render();
@@ -260,6 +266,7 @@ function render(){
   else if(currentView==='agent') el.innerHTML=renderAgent();
   else if(currentView==='crm'){ el.innerHTML=renderCRM(); if(crmContacts.length===0) loadCRM(); }
   else if(currentView==='match') el.innerHTML=renderMatch();
+  else if(currentView==='leads'){ el.innerHTML=renderLeads(); if(leadsData.length===0) loadLeads(); }
   bindEvents();
 }
 
@@ -284,8 +291,8 @@ function taskCardHTML(t,compact){
     '</div></div>'+
     '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">'+
     av(t.assignee,22)+
-    (!compact?'<div style="display:flex;gap:4px"><button onclick="openEditTaskModal(\''+t.id+'\')" style="background:#1a1a28;border:1px solid #252540;border-radius:4px;color:#9ca3af;font-size:10px;padding:2px 6px;cursor:pointer">&#x270F;</button><button onclick="if(confirm(\'Eliminar?\'))dbDeleteTask(\''+t.id+'\')" style="background:#ef444415;border:1px solid #ef444430;border-radius:4px;color:#ef4444;font-size:10px;padding:2px 6px;cursor:pointer">&#x2715;</button></div>':'')+
-    (!compact?'<select onchange="changeTaskStatus(\''+t.id+'\',this.value)" style="background:#1a1a28;border:1px solid #252540;border-radius:5px;color:'+TASK_STATUS_COLORS[t.status]+';font-size:10px;padding:2px 5px;cursor:pointer;font-family:inherit">'+TASK_STATUSES.map(function(s){ return '<option value="'+s+'"'+(t.status===s?' selected':'')+'>'+s+'</option>'; }).join('')+'</select>':'')+
+    (!compact?'<div style="display:flex;gap:4px"><button onclick="openEditTaskModal(\''+t.id+'\')" style="background:#eeeef5;border:1px solid #dcdcec;border-radius:4px;color:#6b7280;font-size:10px;padding:2px 6px;cursor:pointer">&#x270F;</button><button onclick="if(confirm(\'Eliminar?\'))dbDeleteTask(\''+t.id+'\')" style="background:#ef444415;border:1px solid #ef444430;border-radius:4px;color:#ef4444;font-size:10px;padding:2px 6px;cursor:pointer">&#x2715;</button></div>':'')+
+    (!compact?'<select onchange="changeTaskStatus(\''+t.id+'\',this.value)" style="background:#eeeef5;border:1px solid #dcdcec;border-radius:5px;color:'+TASK_STATUS_COLORS[t.status]+';font-size:10px;padding:2px 5px;cursor:pointer;font-family:inherit">'+TASK_STATUSES.map(function(s){ return '<option value="'+s+'"'+(t.status===s?' selected':'')+'>'+s+'</option>'; }).join('')+'</select>':'')+
     '</div></div>';
 }
 
@@ -359,7 +366,7 @@ function renderProjects(){
         return '<div onclick="toggleProject(\''+p.id+'\')" style="background:'+(isSel?'#6366f10c':'#0c0c18')+';border:1px solid '+(isSel?'#6366f150':'#1a1a2e')+';border-radius:11px;padding:16px;cursor:pointer;transition:all .2s">'+
           '<div style="display:flex;justify-content:space-between;margin-bottom:10px">'+chip(status,STATUS_COLORS[status])+
           '<div style="display:flex;gap:5px;align-items:center">'+
-          '<button onclick="event.stopPropagation();openEditProjectModal(\''+p.id+'\')" style="background:#1a1a28;border:1px solid #252540;border-radius:4px;color:#9ca3af;font-size:10px;padding:2px 7px;cursor:pointer">&#x270F;</button>'+
+          '<button onclick="event.stopPropagation();openEditProjectModal(\''+p.id+'\')" style="background:#eeeef5;border:1px solid #dcdcec;border-radius:4px;color:#6b7280;font-size:10px;padding:2px 7px;cursor:pointer">&#x270F;</button>'+
           '<button onclick="event.stopPropagation();if(confirm(\'Eliminar proyecto y sus tareas?\'))dbDeleteProject(\''+p.id+'\')" style="background:#ef444415;border:1px solid #ef444430;border-radius:4px;color:#ef4444;font-size:10px;padding:2px 7px;cursor:pointer">&#x2715;</button>'+
           av(p.responsible,24)+'</div></div>'+
           '<div style="font-size:14px;font-weight:800;margin-bottom:4px;letter-spacing:-.02em">'+p.name+'</div>'+
@@ -376,7 +383,7 @@ function renderProjects(){
       const p=state.projects.find(function(p){ return p.id===selProject; });
       const pt=state.tasks.filter(function(t){ return t.project_id===p.id; });
       const pm=state.meetings.filter(function(m){ return m.project_id===p.id; });
-      html+='<div style="background:#0c0c18;border:1px solid #6366f130;border-radius:12px;padding:20px;margin-top:10px">'+
+      html+='<div style="background:#ffffff;border:1px solid #6366f130;border-radius:12px;padding:20px;margin-top:10px">'+
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'+
         '<div style="font-size:16px;font-weight:800">'+p.name+'</div>'+
         '<button class="btn btn-primary btn-sm" onclick="openTaskModal(\''+p.id+'\')">+ Tarea</button></div>'+
@@ -387,7 +394,7 @@ function renderProjects(){
         '<div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;margin-bottom:10px">Reuniones ('+pm.length+')</div>'+
         (!pm.length?'<div style="font-size:12px;color:#6b7280">Sin reuniones.</div>':'')+
         pm.map(function(m){
-          return '<div style="background:#13131f;border-radius:8px;padding:10px 12px;margin-bottom:7px">'+
+          return '<div style="background:#f3f3f8;border-radius:8px;padding:10px 12px;margin-bottom:7px">'+
             '<div style="font-size:12px;font-weight:600">'+m.title+'</div>'+
             '<div style="display:flex;gap:6px;margin-top:4px"><span style="font-size:10px;color:#6b7280">'+fmtDate(m.date)+'</span>'+chip(m.type,MEET_COLORS[m.type]||'#6b7280')+'</div>'+
             (m.notes?'<div style="font-size:11px;color:#6b7280;margin-top:6px;line-height:1.4">'+m.notes.slice(0,100)+(m.notes.length>100?'…':'')+'</div>':'')+
@@ -462,10 +469,10 @@ function renderMeetings(){
         '</div></div>'+
         '<div style="display:flex;gap:4px">'+att.map(function(a){ return av(a,26); }).join('')+'</div></div>'+
         (m.external_attendees?'<div style="font-size:11px;color:#6b7280;margin-bottom:8px">Externos: '+m.external_attendees+'</div>':'')+
-        (m.notes?'<div style="font-size:12px;color:#9ca3af;line-height:1.6;background:#13131f;border-radius:7px;padding:10px 12px;margin-bottom:10px">'+m.notes+'</div>':'')+
+        (m.notes?'<div style="font-size:12px;color:#6b7280;line-height:1.6;background:#f3f3f8;border-radius:7px;padding:10px 12px;margin-bottom:10px">'+m.notes+'</div>':'')+
         '<div style="display:flex;justify-content:space-between;align-items:center">'+
         '<div style="display:flex;gap:6px">'+
-        '<button onclick="openEditMeetingModal(\''+m.id+'\')" style="background:#1a1a28;border:1px solid #252540;border-radius:5px;color:#9ca3af;font-size:11px;padding:5px 10px;cursor:pointer;font-family:inherit">&#x270F; Editar</button>'+
+        '<button onclick="openEditMeetingModal(\''+m.id+'\')" style="background:#eeeef5;border:1px solid #dcdcec;border-radius:5px;color:#6b7280;font-size:11px;padding:5px 10px;cursor:pointer;font-family:inherit">&#x270F; Editar</button>'+
         '<button onclick="if(confirm(\'Eliminar reunión?\'))dbDeleteMeeting(\''+m.id+'\')" style="background:#ef444415;border:1px solid #ef444430;border-radius:5px;color:#ef4444;font-size:11px;padding:5px 10px;cursor:pointer;font-family:inherit">&#x2715;</button></div>'+
         '<button onclick="sendToAgent(\''+encodeURIComponent(m.notes||m.title)+'\',\''+( m.project_id||'')+'\',true)" style="background:#6366f115;border:1px solid #6366f130;border-radius:6px;color:#a5b4fc;font-size:11px;font-weight:600;padding:5px 12px;cursor:pointer;font-family:inherit">&#x2726; Extraer tareas con IA →</button></div>'+
         '</div>';
@@ -486,7 +493,7 @@ function renderAgent(){
     (agentHistory.length?'<button onclick="agentHistory=[];render()" class="btn btn-secondary btn-sm">Limpiar</button>':'')+
     '</div></div>'+
     (!agentHistory.length?'<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px">'+
-    quickPrompts.map(function(s){ return '<button onclick="submitAgent(\''+s.replace(/'/g,"\\'")+'\')" style="background:#0c0c18;border:1px solid #1a1a2e;border-radius:20px;color:#9ca3af;font-size:12px;padding:6px 14px;cursor:pointer;font-family:inherit">'+s+'</button>'; }).join('')+
+    quickPrompts.map(function(s){ return '<button onclick="submitAgent(\''+s.replace(/'/g,"\\'")+'\')" style="background:#ffffff;border:1px solid #e2e2ec;border-radius:20px;color:#6b7280;font-size:12px;padding:6px 14px;cursor:pointer;font-family:inherit">'+s+'</button>'; }).join('')+
     '</div>':'')+
     '<div id="agent-messages">'+
     agentHistory.map(function(msg){
@@ -507,7 +514,7 @@ function renderMatch(){
     '<h2 style="font-size:20px;font-weight:900;margin:0 0 4px;letter-spacing:-.03em">&#x27E1; Match Engine</h2>'+
     '<p style="color:#6b7280;font-size:13px;margin:0">Describí una necesidad de un cliente y encontramos quién en tu red puede resolverla.</p>'+
     '</div>'+
-    '<div style="background:#0c0c18;border:1px solid #1a1a2e;border-radius:11px;padding:20px;margin-bottom:24px">'+
+    '<div style="background:#ffffff;border:1px solid #e2e2ec;border-radius:11px;padding:20px;margin-bottom:24px">'+
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
     '<div style="font-size:13px;font-weight:700;color:#a5b4fc">Base de conocimiento</div>'+
     '<button onclick="startSync()" class="btn btn-secondary btn-sm" id="sync-btn" '+(syncProgress?'disabled':'')+'>'+
@@ -539,7 +546,7 @@ function renderMatchResults(){
   return '<div>'+
     '<div style="background:#6366f118;border:1px solid #6366f130;border-radius:9px;padding:12px 14px;margin-bottom:16px">'+
     '<div style="font-size:11px;color:#6b7280;margin-bottom:4px">Necesidad detectada</div>'+
-    '<div style="font-size:13px;color:#e8e8f0;font-weight:600">'+(matchResult.necesidad_detectada||'')+'</div>'+
+    '<div style="font-size:13px;color:#1a1a2e;font-weight:600">'+(matchResult.necesidad_detectada||'')+'</div>'+
     (matchResult.resumen?'<div style="font-size:12px;color:#818cf8;margin-top:6px">'+matchResult.resumen+'</div>':'')+
     '</div>'+
     '<div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">'+matches.length+' match'+(matches.length!==1?'es':'')+' encontrado'+(matches.length!==1?'s':'')+'</div>'+
@@ -555,10 +562,10 @@ function renderMatchResults(){
         '<div style="font-size:20px;font-weight:900;color:'+scoreColor+'">'+m.score+'/10</div>'+
         '</div></div>'+
         '<div class="score-bar"><div class="score-fill" style="width:'+(m.score*10)+'%;background:'+scoreColor+'"></div></div>'+
-        '<div style="font-size:12px;color:#9ca3af;line-height:1.6;margin-bottom:10px">'+m.justificacion+'</div>'+
-        '<div style="background:#13131f;border-radius:7px;padding:8px 10px;margin-bottom:10px">'+
+        '<div style="font-size:12px;color:#6b7280;line-height:1.6;margin-bottom:10px">'+m.justificacion+'</div>'+
+        '<div style="background:#f3f3f8;border-radius:7px;padding:8px 10px;margin-bottom:10px">'+
         '<span style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em">Próximo paso</span>'+
-        '<div style="font-size:12px;color:#e8e8f0;margin-top:3px">'+m.proximo_paso+'</div>'+
+        '<div style="font-size:12px;color:#1a1a2e;margin-top:3px">'+m.proximo_paso+'</div>'+
         '</div>'+
         '<div style="display:flex;gap:8px;align-items:center">'+
         '<div style="display:flex;gap:6px">'+
@@ -626,7 +633,7 @@ async function generateOutreach(id,titleEnc,justEnc,nextEnc){
       '<div class="modal-title"><h3>&#x2709; Email generado</h3><button class="close-btn" onclick="closeModal()">×</button></div>'+
       '<div style="margin-bottom:12px">'+
       '<div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Asunto</div>'+
-      '<div style="background:#13131f;border-radius:7px;padding:10px 12px;font-size:13px;font-weight:600" class="asunto-val">'+(data.asunto||'')+'</div>'+
+      '<div style="background:#f3f3f8;border-radius:7px;padding:10px 12px;font-size:13px;font-weight:600" class="asunto-val">'+(data.asunto||'')+'</div>'+
       '</div>'+
       '<div style="margin-bottom:16px">'+
       '<div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Cuerpo</div>'+
@@ -769,7 +776,7 @@ function renderCRM(){
         (position?'<div style="font-size:11px;color:#9ca3af">'+position+'</div>':'')+
         (company?'<div style="font-size:11px;color:#6b7280;margin-top:1px">'+company+'</div>':'')+
         '<div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap">'+
-        (country?'<span style="font-size:10px;color:#6b7280;background:#1a1a28;border-radius:4px;padding:1px 5px">'+country+'</span>':'')+
+        (country?'<span style="font-size:10px;color:#6b7280;background:#eeeef5;border-radius:4px;padding:1px 5px">'+country+'</span>':'')+
         (source?'<span style="font-size:10px;color:#f59e0b;background:#f59e0b18;border-radius:4px;padding:1px 5px;border:1px solid #f59e0b28">'+source.split(',')[0]+'</span>':'')+
         '</div>'+
         (email?'<div style="font-size:11px;color:#6366f1;margin-top:6px">'+email+'</div>':'')+
@@ -808,7 +815,7 @@ function openContactDetail(id){
     (service?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Servicio</div><div style="font-size:13px">'+service+'</div></div>':'')+
     (traveled==='✓'?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Viajó con +Partners</div><div style="font-size:13px;color:#10b981">✓ Sí</div></div>':'')+
     '</div>'+
-    (notes?'<div style="background:#13131f;border-radius:8px;padding:12px;margin-bottom:16px"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Notas</div><div style="font-size:13px;line-height:1.6;color:#9ca3af">'+notes+'</div></div>':'')+
+    (notes?'<div style="background:#f3f3f8;border-radius:8px;padding:12px;margin-bottom:16px"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Notas</div><div style="font-size:13px;line-height:1.6;color:#9ca3af">'+notes+'</div></div>':'')+
     '<div style="display:flex;gap:8px;justify-content:flex-end">'+
     '<button onclick="window.open(\''+c.url+'\',\'_blank\')" class="btn btn-secondary">Abrir en Notion ↗</button>'+
     '<button onclick="closeModal();setView(\'match\')" class="btn btn-primary">&#x27E1; Buscar match</button>'+
@@ -982,7 +989,7 @@ async function autoAssignProjects(){
     '<div class="modal" style="width:600px">'+
     '<div class="modal-title"><h3>Reporte de auto-asignación</h3><button class="close-btn" onclick="closeModal()">×</button></div>'+
     '<div style="margin-bottom:16px"><div style="font-size:13px;margin-bottom:8px"><b>'+assigned+'</b> tareas asignadas · <b>'+skipped+'</b> sin match</div></div>'+
-    (report.length?'<div style="max-height:400px;overflow-y:auto">'+report.map(function(r){ return '<div style="background:#0d0d18;border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12px"><div style="color:#e8e8f0;margin-bottom:2px">'+r.task+'</div><div style="color:#6366f1;font-size:11px">→ '+r.project+'</div></div>'; }).join('')+'</div>':'')+
+    (report.length?'<div style="max-height:400px;overflow-y:auto">'+report.map(function(r){ return '<div style="background:#f8f8fc;border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12px"><div style="color:#1a1a2e;margin-bottom:2px">'+r.task+'</div><div style="color:#6366f1;font-size:11px">→ '+r.project+'</div></div>'; }).join('')+'</div>':'')+
     '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">'+
     '<button class="btn btn-primary" onclick="closeModal();render()">Cerrar</button>'+
     '</div></div></div>';
@@ -1199,6 +1206,218 @@ function toggleTask(id,currentStatus){
 function changeTaskStatus(id,status){ dbUpdateTask(id,{status:status}); }
 function toggleProject(id){ selProject=selProject===id?null:id; render(); }
 function goToProject(id){ selProject=id; setView('projects'); }
+
+
+async function loadLeads(){
+  leadsLoading=true; render();
+  try {
+    const res=await fetch(PROXY+'/notion/contacts');
+    const data=await res.json();
+    // Solo contactos con Lead Stage cargado
+    leadsData=(data.results||[]).filter(function(c){
+      const ls=c.properties['Lead Stage'];
+      return ls&&ls.select&&ls.select.name;
+    });
+  } catch(e){ toast('Error cargando leads','#ef4444'); }
+  leadsLoading=false; render();
+}
+
+async function updateLeadStage(notionId, stage){
+  try {
+    await fetch(PROXY+'/notion/update',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        pageId: notionId,
+        properties:{'Lead Stage':{select:{name:stage}}}
+      }),
+    });
+    // Actualizar local
+    const c=leadsData.find(function(x){return x.id===notionId;});
+    if(c&&c.properties['Lead Stage']) c.properties['Lead Stage'].select.name=stage;
+    toast('Lead actualizado');
+    render();
+  } catch(e){ toast('Error actualizando lead','#ef4444'); }
+}
+
+function renderLeads(){
+  const filtered=leadsData.filter(function(c){
+    if(!leadsSearch) return true;
+    const s=leadsSearch.toLowerCase();
+    const name=(notionProp(c,'Name','title')+' '+notionProp(c,'Company','rich_text')).toLowerCase();
+    return name.includes(s);
+  });
+
+  // Agrupar por etapa
+  const byStage={};
+  LEAD_STAGES.forEach(function(s){ byStage[s]=[]; });
+  filtered.forEach(function(c){
+    const stage=c.properties['Lead Stage']?.select?.name||'Nuevo';
+    if(byStage[stage]) byStage[stage].push(c);
+  });
+
+  return '<div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">'+
+    '<div><h2 style="font-size:20px;font-weight:900;margin:0 0 4px;letter-spacing:-.03em">&#x25B6; Leads</h2>'+
+    '<p style="color:#6b7280;font-size:12px;margin:0">'+leadsData.length+' leads activos</p></div>'+
+    '<div style="display:flex;gap:8px">'+
+    '<button onclick="loadLeads()" class="btn btn-secondary btn-sm">&#x21BB; Actualizar</button>'+
+    '<button onclick="openAddLeadModal()" class="btn btn-primary">+ Nuevo lead</button>'+
+    '</div></div>'+
+    '<div style="margin-bottom:16px"><input class="inp" placeholder="Buscar lead..." value="'+leadsSearch+'" oninput="leadsSearch=this.value;render()" style="max-width:360px"></div>'+
+    (leadsLoading?'<div style="text-align:center;color:#6b7280;padding:40px">Cargando...</div>':'')+
+    // Kanban
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">'+
+    LEAD_STAGES.map(function(stage){
+      const cards=byStage[stage]||[];
+      const color=LEAD_STAGE_COLORS[stage];
+      return '<div style="background:#f8f8fc;border:1px solid #e2e2ec;border-radius:11px;padding:14px">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
+        '<div style="display:flex;align-items:center;gap:6px">'+
+        '<div style="width:8px;height:8px;border-radius:50%;background:'+color+'"></div>'+
+        '<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280">'+stage+'</span>'+
+        '</div>'+
+        '<span style="font-size:11px;font-weight:700;color:'+color+';background:'+color+'15;border-radius:10px;padding:1px 8px">'+cards.length+'</span>'+
+        '</div>'+
+        '<div style="display:flex;flex-direction:column;gap:8px">'+
+        cards.map(function(c){
+          const name=notionProp(c,'Name','title')||'(Sin nombre)';
+          const company=notionProp(c,'Company','rich_text');
+          const email=notionProp(c,'Email','email');
+          const country=notionProp(c,'Country','rich_text');
+          const source=notionProp(c,'Lead Source','multi_select');
+          const mtgs=state.meetings.filter(function(m){
+            return m.external_attendees&&m.external_attendees.toLowerCase().includes(name.toLowerCase().split(' ')[0]);
+          });
+          return '<div style="background:#ffffff;border:1px solid #e2e2ec;border-radius:9px;padding:12px;cursor:pointer" onclick="openLeadDetail(\'+c.id+\')">'+
+            '<div style="font-size:13px;font-weight:700;margin-bottom:2px;color:#1a1a2e">'+name+'</div>'+
+            (company?'<div style="font-size:11px;color:#6b7280;margin-bottom:6px">'+company+'</div>':'')+
+            '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">'+
+            (country?'<span style="font-size:10px;background:#f0f0f5;color:#6b7280;border-radius:4px;padding:1px 5px">'+country+'</span>':'')+
+            (source?'<span style="font-size:10px;background:#f59e0b15;color:#d97706;border-radius:4px;padding:1px 5px;border:1px solid #f59e0b28">'+source.split(',')[0]+'</span>':'')+
+            (mtgs.length?'<span style="font-size:10px;background:#6366f115;color:#6366f1;border-radius:4px;padding:1px 5px">'+mtgs.length+' reuni'+(mtgs.length>1?'ones':'ón')+'</span>':'')+
+            '</div>'+
+            '<select onchange="event.stopPropagation();updateLeadStage(\'+c.id+\',this.value)" style="width:100%;background:#f3f3f8;border:1px solid #e2e2ec;border-radius:6px;color:#1a1a2e;font-size:11px;padding:4px 6px;cursor:pointer;font-family:inherit" onclick="event.stopPropagation()">'+
+            LEAD_STAGES.map(function(s){ return '<option value="'+s+'"'+(s===stage?' selected':'')+'>'+s+'</option>'; }).join('')+
+            '</select>'+
+            '</div>';
+        }).join('')+
+        (cards.length===0?'<div style="text-align:center;color:#9ca3af;font-size:12px;padding:16px">Sin leads</div>':'')+
+        '</div></div>';
+    }).join('')+
+    '</div></div>';
+}
+
+function openCurrentLeadInNotion(){ openCurrentLeadInNotion(); }
+function openLeadDetail(id){
+  const c=leadsData.find(function(x){ return x.id===id; });
+  if(!c) return;
+  window._currentLeadUrl = c.url;
+  window._currentLeadCompany = notionProp(c,'Company','rich_text');
+  window._currentLeadCountry = notionProp(c,'Country','rich_text');
+  const name=notionProp(c,'Name','title')||'(Sin nombre)';
+  const company=window._currentLeadCompany;
+  const position=notionProp(c,'Position','rich_text');
+  const email=notionProp(c,'Email','email');
+  const phone=notionProp(c,'Phone','phone');
+  const country=window._currentLeadCountry;
+  const source=notionProp(c,'Lead Source','multi_select');
+  const interest=notionProp(c,'Country of Interest','multi_select');
+  const notes=notionProp(c,'Notes','rich_text');
+  const service=notionProp(c,'Servicio contratado','rich_text');
+  const stage=c.properties['Lead Stage']?.select?.name||'Nuevo';
+  const stageColor=LEAD_STAGE_COLORS[stage]||'#6366f1';
+  const relMeetings=state.meetings.filter(function(m){
+    const haystack=(m.external_attendees||'').toLowerCase()+' '+(m.title||'').toLowerCase()+' '+(m.notes||'').toLowerCase();
+    const needle=(name.split(' ')[0]||'').toLowerCase();
+    const needle2=(company||'').toLowerCase();
+    return (needle.length>2&&haystack.includes(needle))||(needle2.length>3&&haystack.includes(needle2));
+  });
+  const mc=document.getElementById('modal-container');
+  mc.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()">'+
+    '<div class="modal" style="width:580px">'+
+    '<div class="modal-title">'+
+    '<div><h3>'+name+'</h3>'+
+    (position?'<div style="font-size:12px;color:#6b7280;margin-top:2px">'+position+(company?' · '+company:'')+'</div>':'')+
+    '</div>'+
+    '<div style="display:flex;gap:8px;align-items:center">'+
+    '<span style="font-size:11px;font-weight:700;background:'+stageColor+'20;color:'+stageColor+';border-radius:20px;padding:3px 10px;border:1px solid '+stageColor+'40">'+stage+'</span>'+
+    '<button class="close-btn" onclick="closeModal()">×</button>'+
+    '</div></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">'+
+    (email?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Email</div><div style="font-size:13px">'+email+'</div></div>':'')+
+    (phone?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Teléfono</div><div style="font-size:13px">'+phone+'</div></div>':'')+
+    (country?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">País</div><div style="font-size:13px">'+country+'</div></div>':'')+
+    (source?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Fuente</div><div style="font-size:13px">'+source+'</div></div>':'')+
+    (interest?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Países de interés</div><div style="font-size:13px">'+interest+'</div></div>':'')+
+    (service?'<div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Servicio</div><div style="font-size:13px">'+service+'</div></div>':'')+
+    '</div>'+
+    '<div style="margin-bottom:14px"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Cambiar etapa</div>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+    LEAD_STAGES.map(function(s){
+      const sc=LEAD_STAGE_COLORS[s];
+      return '<button onclick="updateLeadStage(\''+c.id+'\',\''+s+'\');closeModal()" style="background:'+(s===stage?sc:'#f0f0f5')+';border:1px solid '+(s===stage?sc:'#e2e2ec')+';border-radius:20px;color:'+(s===stage?'#fff':'#6b7280')+';font-size:11px;font-weight:600;padding:4px 12px;cursor:pointer;font-family:inherit">'+s+'</button>';
+    }).join('')+
+    '</div></div>'+
+    (notes?'<div style="background:#f8f8fc;border-radius:8px;padding:12px;margin-bottom:14px"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Notas</div><div style="font-size:13px;line-height:1.6;color:#374151">'+notes+'</div></div>':'')+
+    (relMeetings.length?'<div style="margin-bottom:14px"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Reuniones relacionadas ('+relMeetings.length+')</div>'+
+    relMeetings.map(function(m){
+      return '<div style="background:#f8f8fc;border:1px solid #e2e2ec;border-radius:7px;padding:10px 12px;margin-bottom:6px">'+
+        '<div style="font-size:12px;font-weight:600;color:#1a1a2e">'+m.title+'</div>'+
+        '<div style="font-size:11px;color:#6b7280;margin-top:2px">'+fmtDate(m.date)+(m.external_attendees?' · '+m.external_attendees:'')+'</div>'+
+        (m.notes?'<div style="font-size:11px;color:#9ca3af;margin-top:4px;line-height:1.4">'+m.notes.slice(0,120)+(m.notes.length>120?'…':'')+'</div>':'')+
+        '</div>';
+    }).join('')+'</div>':'<div style="font-size:12px;color:#9ca3af;margin-bottom:14px">Sin reuniones relacionadas aún.</div>')+
+    '<div style="display:flex;gap:8px;justify-content:flex-end">'+
+    '<button onclick="openCurrentLeadInNotion()" class="btn btn-secondary">Abrir en Notion ↗</button>'+
+    '<button onclick="closeModal();goLeadMatch()" class="btn btn-primary">&#x27E1; Buscar match</button>'+
+    '</div></div></div>';
+}
+
+function openAddLeadModal(){
+  const mc=document.getElementById('modal-container');
+  mc.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()">'+
+    '<div class="modal">'+
+    '<div class="modal-title"><h3>Nuevo lead</h3><button class="close-btn" onclick="closeModal()">×</button></div>'+
+    '<div class="grid2"><div class="field"><label>Nombre *</label><input id="nl-name" class="inp" autofocus placeholder="Juan García"></div>'+
+    '<div class="field"><label>Empresa</label><input id="nl-company" class="inp" placeholder="Banco XYZ"></div></div>'+
+    '<div class="grid2"><div class="field"><label>Cargo</label><input id="nl-position" class="inp" placeholder="CEO"></div>'+
+    '<div class="field"><label>País</label><input id="nl-country" class="inp" placeholder="Argentina"></div></div>'+
+    '<div class="grid2"><div class="field"><label>Email</label><input id="nl-email" class="inp" type="email"></div>'+
+    '<div class="field"><label>Teléfono</label><input id="nl-phone" class="inp"></div></div>'+
+    '<div class="field"><label>Etapa</label><select id="nl-stage" class="inp">'+
+    LEAD_STAGES.map(function(s){ return '<option>'+s+'</option>'; }).join('')+
+    '</select></div>'+
+    '<div class="field"><label>Fuente</label><input id="nl-source" class="inp" placeholder="Evento, referido, LinkedIn..."></div>'+
+    '<div class="field"><label>Notas</label><textarea id="nl-notes" class="inp" style="height:64px;resize:none"></textarea></div>'+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">'+
+    '<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>'+
+    '<button class="btn btn-primary" onclick="saveNewLead()">Crear en Notion</button>'+
+    '</div></div></div>';
+}
+
+async function saveNewLead(){
+  const name=document.getElementById('nl-name')?.value.trim();
+  if(!name) return;
+  const properties={
+    'Name':{title:[{text:{content:name}}]},
+    'Company':{rich_text:[{text:{content:document.getElementById('nl-company')?.value||''}}]},
+    'Position':{rich_text:[{text:{content:document.getElementById('nl-position')?.value||''}}]},
+    'Country':{rich_text:[{text:{content:document.getElementById('nl-country')?.value||''}}]},
+    'Email':{email:document.getElementById('nl-email')?.value||null},
+    'Phone':{phone_number:document.getElementById('nl-phone')?.value||null},
+    'Lead Stage':{select:{name:document.getElementById('nl-stage')?.value||'Nuevo'}},
+    'Lead Source':{multi_select:[{name:document.getElementById('nl-source')?.value||''}].filter(function(x){return x.name;})},
+    'Notes':{rich_text:[{text:{content:document.getElementById('nl-notes')?.value||''}}]},
+  };
+  closeModal();
+  try {
+    const res=await fetch(PROXY+'/notion/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({properties:properties})});
+    const data=await res.json();
+    if(data.id){ toast('Lead creado en Notion'); await loadLeads(); }
+    else toast('Error al crear lead','#ef4444');
+  } catch(e){ toast('Error: '+e.message,'#ef4444'); }
+}
 
 async function init(){
   await loadAll();
