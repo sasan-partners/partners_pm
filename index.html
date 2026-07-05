@@ -115,6 +115,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:none}
 
 
 
+
 const SUPABASE_URL = 'https://phjiuommgudbwywuumvs.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Oq_4uJ9TVFv6LkQe6Dirdg_P7bUWImT';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1411,18 +1412,33 @@ function toggleProject(id){ selProject=selProject===id?null:id; render(); }
 function goToProject(id){ selProject=id; setView('projects'); }
 
 
-async function loadLeads(){
+let _leadsLastFetch = 0;
+const LEADS_CACHE_MS = 5 * 60 * 1000; // 5 minutos
+
+function leadsLastUpdatedText(){
+  if(!_leadsLastFetch) return '';
+  const mins = Math.floor((Date.now()-_leadsLastFetch)/60000);
+  if(mins < 1) return 'Actualizado hace menos de 1 min';
+  return 'Actualizado hace '+mins+' min'+(mins>1?'s':'');
+}
+
+async function loadLeads(force){
+  if(!force && leadsData.length>0 && (Date.now()-_leadsLastFetch)<LEADS_CACHE_MS){
+    return; // Usar cache
+  }
   leadsLoading=true; render();
   try {
     const res=await fetch(PROXY+'/notion/leads');
     const data=await res.json();
     if(data.error){ toast('Error: '+data.error,'#ef4444'); leadsData=[]; }
     else {
-      // Filtro extra de seguridad por si el server no filtro bien
       leadsData=(data.results||[]).filter(function(c){
         const ls=c.properties['Lead Stage'];
-        return ls&&ls.select&&ls.select.name;
+        const svc=c.properties['Servicio de interés'];
+        return ls&&ls.select&&ls.select.name&&svc&&svc.multi_select&&svc.multi_select.length>0;
       });
+      _leadsLastFetch=Date.now();
+      toast('&#x2713; '+leadsData.length+' leads actualizados desde Notion');
     }
   } catch(e){ toast('Error cargando leads: '+e.message,'#ef4444'); leadsData=[]; }
   leadsLoading=false; render();
@@ -1483,7 +1499,7 @@ function renderLeads(){
     '<div><h2 style="font-size:20px;font-weight:900;margin:0 0 4px;letter-spacing:-.03em">&#x25B6; Leads</h2>'+
     '<p style="color:#6b7280;font-size:12px;margin:0">'+leadsData.length+' leads activos</p></div>'+
     '<div style="display:flex;gap:8px">'+
-    '<button onclick="loadLeads()" class="btn btn-secondary btn-sm">&#x21BB; Actualizar</button>'+
+    '<button onclick="loadLeads(true)" class="btn btn-secondary btn-sm">&#x21BB; Actualizar</button>'+(_leadsLastFetch?'<span style="font-size:10px;color:#9ca3af;margin-left:4px">'+leadsLastUpdatedText()+'</span>':'')+
     '<button onclick="openAddLeadModal()" class="btn btn-primary">+ Nuevo lead</button>'+
     '</div></div>'+
 
@@ -1580,6 +1596,44 @@ function stageFromSelect(sel){
   if(id&&stage) updateLeadStage(id,stage);
 }
 
+function openLeadInAgent(){
+  closeModal();
+  // Find lead data
+  const c=leadsData.find(function(x){ return x.id===window._currentLeadId; });
+  if(!c) return;
+  const name=notionProp(c,'Name','title')||'';
+  const company=notionProp(c,'Company','rich_text')||'';
+  const country=notionProp(c,'Country','rich_text')||'';
+  const stage=c.properties['Lead Stage']&&c.properties['Lead Stage'].select?c.properties['Lead Stage'].select.name:'';
+  const services=(c.properties['Servicio de interés']&&c.properties['Servicio de interés'].multi_select||[]).map(function(x){ return x.name; }).join(', ');
+  const notes=notionProp(c,'Notes','rich_text')||'';
+  // Get related meetings
+  const relMeetings=state.meetings.filter(function(m){
+    const ext=(m.external_attendees||'').toLowerCase();
+    if(!ext) return false;
+    const fn=(name.split(' ')[0]||'').toLowerCase();
+    const ln=(name.split(' ')[1]||'').toLowerCase();
+    const co=company.toLowerCase();
+    return (fn.length>2&&ext.includes(fn)&&(ln.length<2||ext.includes(ln)))||(co.length>3&&ext.includes(co));
+  });
+  // Build context message
+  let msg='Lead: '+name+(company?' ('+company+')':'')+'.';
+  if(country) msg+=' País: '+country+'.';
+  if(stage) msg+=' Etapa: '+stage+'.';
+  if(services) msg+=' Servicio de interés: '+services+'.';
+  if(notes) msg+=' Notas: '+notes.slice(0,300)+'.';
+  if(relMeetings.length){
+    msg+=' Reuniones relacionadas: '+relMeetings.map(function(m){
+      return m.title+' ('+m.date+(m.notes?': '+m.notes.slice(0,100):'')+')'
+    }).join(' | ');
+  }
+  msg+=' ¿Cuál es el próximo paso con este lead?';
+  agentMode='leads';
+  agentHistory=[];
+  setView('agent');
+  setTimeout(function(){ submitAgent(msg); },300);
+}
+
 function openLeadDetail(id){
   const c=leadsData.find(function(x){ return x.id===id; });
   if(!c) return;
@@ -1600,11 +1654,16 @@ function openLeadDetail(id){
   window._currentLeadCompany=company||'';
   window._currentLeadCountry=country||'';
 
+  // Match solo por external_attendees — nombre completo o empresa
   const relMeetings=state.meetings.filter(function(m){
-    const hay=((m.external_attendees||'')+' '+(m.title||'')+' '+(m.notes||'')).toLowerCase();
-    const n=(name.split(' ')[0]||'').toLowerCase();
+    const ext=(m.external_attendees||'').toLowerCase();
+    if(!ext) return false;
+    const firstName=(name.split(' ')[0]||'').toLowerCase();
+    const lastName=(name.split(' ')[1]||'').toLowerCase();
     const co=(company||'').toLowerCase();
-    return (n.length>2&&hay.includes(n))||(co.length>3&&hay.includes(co));
+    const nameMatch=firstName.length>2&&ext.includes(firstName)&&(lastName.length<2||ext.includes(lastName));
+    const companyMatch=co.length>3&&ext.includes(co);
+    return nameMatch||companyMatch;
   });
 
   const mc=document.getElementById('modal-container');
@@ -1669,7 +1728,7 @@ function openLeadDetail(id){
     :'')+
     '<div style="display:flex;gap:8px;justify-content:flex-end;padding-top:12px;border-top:1px solid #e2e2ec">'+
     '<button onclick="window.open(window._currentLeadUrl,\'_blank\')" class="btn btn-secondary">Abrir en Notion &#x2197;</button>'+
-    '<button onclick="closeModal();matchQuery=window._currentLeadCompany+\'\' \'+window._currentLeadCountry;setView(\'match\')" class="btn btn-secondary">&#x27E1; Match</button>'+
+    '<button onclick="openLeadInAgent()" class="btn btn-secondary">&#x27E1; Match</button>'+
     '<button onclick="saveLeadDetail(\''+id+'\')" class="btn btn-primary">Guardar cambios</button>'+
     '</div></div></div>';
 }
@@ -1824,6 +1883,7 @@ async function init(){
   loadLeads();
 }
 init();
+
 
 
 
