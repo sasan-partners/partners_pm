@@ -1434,7 +1434,7 @@ async function loadLeads(force){
     else {
       leadsData=(data.results||[]).filter(function(c){
         const ls=c.properties['Lead Stage'];
-        const svc=c.properties['Servicio de interés'];
+        const svc=c.properties['Servicio de Interes'];
         return ls&&ls.select&&ls.select.name&&svc&&svc.multi_select&&svc.multi_select.length>0;
       });
       _leadsLastFetch=Date.now();
@@ -1470,7 +1470,7 @@ function renderLeads(){
     const name=(notionProp(c,'Name','title')+' '+notionProp(c,'Company','rich_text')).toLowerCase();
     if(leadsSearch&&!name.includes(leadsSearch.toLowerCase())) return false;
     if(leadsFilterService){
-      const svcs=(c.properties['Servicio de interés']&&c.properties['Servicio de interés'].multi_select||[]).map(function(x){ return x.name; });
+      const svcs=(c.properties['Servicio de Interes']&&c.properties['Servicio de Interes'].multi_select||[]).map(function(x){ return x.name; });
       if(!svcs.includes(leadsFilterService)) return false;
     }
     if(leadsFilterCountry&&notionProp(c,'Country','rich_text')!==leadsFilterCountry) return false;
@@ -1549,7 +1549,7 @@ function renderLeads(){
           const company=notionProp(c,'Company','rich_text');
           const country=notionProp(c,'Country','rich_text');
           const source=notionProp(c,'Lead Source','multi_select');
-          const services=(c.properties['Servicio de interés']&&c.properties['Servicio de interés'].multi_select||[]).map(function(x){ return x.name; });
+          const services=(c.properties['Servicio de Interes']&&c.properties['Servicio de Interes'].multi_select||[]).map(function(x){ return x.name; });
           const owner=c.properties['Responsable']&&c.properties['Responsable'].select?c.properties['Responsable'].select.name:'';
           const oc=LEAD_OWNER_COLORS[owner]||'';
           return '<div class="lead-card" draggable="true" data-lid="'+c.id+'" '+
@@ -1605,7 +1605,7 @@ function openLeadInAgent(){
   const company=notionProp(c,'Company','rich_text')||'';
   const country=notionProp(c,'Country','rich_text')||'';
   const stage=c.properties['Lead Stage']&&c.properties['Lead Stage'].select?c.properties['Lead Stage'].select.name:'';
-  const services=(c.properties['Servicio de interés']&&c.properties['Servicio de interés'].multi_select||[]).map(function(x){ return x.name; }).join(', ');
+  const services=(c.properties['Servicio de Interes']&&c.properties['Servicio de Interes'].multi_select||[]).map(function(x){ return x.name; }).join(', ');
   const notes=notionProp(c,'Notes','rich_text')||'';
   // Get related meetings
   const relMeetings=state.meetings.filter(function(m){
@@ -1620,7 +1620,7 @@ function openLeadInAgent(){
   let msg='Lead: '+name+(company?' ('+company+')':'')+'.';
   if(country) msg+=' País: '+country+'.';
   if(stage) msg+=' Etapa: '+stage+'.';
-  if(services) msg+=' Servicio de interés: '+services+'.';
+  if(services) msg+=' Servicio de Interes: '+services+'.';
   if(notes) msg+=' Notas: '+notes.slice(0,300)+'.';
   if(relMeetings.length){
     msg+=' Reuniones relacionadas: '+relMeetings.map(function(m){
@@ -1650,7 +1650,7 @@ function openLeadDetail(id){
   const notes=notionProp(c,'Notes','rich_text');
   const stage=c.properties['Lead Stage']&&c.properties['Lead Stage'].select?c.properties['Lead Stage'].select.name:'Nuevo';
   const stageColor=LEAD_STAGE_COLORS[stage]||'#6366f1';
-  const services=(c.properties['Servicio de interés']&&c.properties['Servicio de interés'].multi_select||[]).map(function(x){ return x.name; });
+  const services=(c.properties['Servicio de Interes']&&c.properties['Servicio de Interes'].multi_select||[]).map(function(x){ return x.name; });
   window._currentLeadCompany=company||'';
   window._currentLeadCountry=country||'';
 
@@ -1706,7 +1706,7 @@ function openLeadDetail(id){
       return '<button data-owner="'+u+'" data-lid="'+id+'" onclick="setLeadOwner(this)" style="background:'+(active?oc:'#f0f0f5')+';border:1px solid '+(active?oc:'#e2e2ec')+';border-radius:20px;color:'+(active?'#fff':'#6b7280')+';font-size:11px;font-weight:700;padding:4px 14px;cursor:pointer;font-family:inherit">'+u+'</button>';
     }).join('')+
     '</div></div>'+
-    '<div style="margin-bottom:12px"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Servicio de interés</div>'+
+    '<div style="margin-bottom:12px"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Servicio de Interes</div>'+
     '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
     LEAD_SERVICES.map(function(sv){
       const sc=LEAD_SERVICE_COLORS[sv]||'#6b7280';
@@ -1749,7 +1749,7 @@ function toggleSvcBtn(btn){
   var sv=btn.dataset.svc;
   var c=leadsData.find(function(x){ return x.id===notionId; });
   if(!c) return;
-  var current=(c.properties['Servicio de interés']&&c.properties['Servicio de interés'].multi_select||[]).map(function(x){ return x.name; });
+  var current=(c.properties['Servicio de Interes']&&c.properties['Servicio de Interes'].multi_select||[]).map(function(x){ return x.name; });
   var updated=current.includes(sv)?current.filter(function(x){ return x!==sv; }):current.concat([sv]);
   var sc=LEAD_SERVICE_COLORS[sv]||'#6b7280';
   var nowActive=updated.includes(sv);
@@ -1787,10 +1787,10 @@ async function updateLeadService(notionId,services){
     await fetch(PROXY+'/notion/update',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({pageId:notionId,properties:{'Servicio de interés':{multi_select:services.map(function(s){ return {name:s}; })}}}),
+      body:JSON.stringify({pageId:notionId,properties:{'Servicio de Interes':{multi_select:services.map(function(s){ return {name:s}; })}}}),
     });
     var c=leadsData.find(function(x){ return x.id===notionId; });
-    if(c) c.properties['Servicio de interés']={multi_select:services.map(function(s){ return {name:s}; })};
+    if(c) c.properties['Servicio de Interes']={multi_select:services.map(function(s){ return {name:s}; })};
     toast('Servicio actualizado');
   } catch(e){ toast('Error','#ef4444'); }
 }
