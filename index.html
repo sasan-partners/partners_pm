@@ -120,6 +120,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:none}
 
 
 
+
+
 const SUPABASE_URL = 'https://phjiuommgudbwywuumvs.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Oq_4uJ9TVFv6LkQe6Dirdg_P7bUWImT';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -150,7 +152,7 @@ let leadsFilterService = '';
 let leadsFilterCountry = '';
 let leadsFilterSource = '';
 let leadsFilterOwner = 'all';
-let leadsFilterNoFW = false;
+let leadsViewMode = 'all'; // 'all', 'fintech', 'proyectos'
 
 const USERS = ['Sasan','Jorge','Juan'];
 const STATUSES = ['backlog','análisis','ejecución','terminado'];
@@ -797,7 +799,11 @@ function renderCRM(){
     (!crmLoading&&filtered.length===0?'<div class="card" style="text-align:center;color:#6b7280;padding:32px;font-size:13px">No hay contactos.</div>':'')+
     '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">'+
     filtered.map(function(c){
-      const name=notionProp(c,'Name','title')||notionProp(c,'Full Name','rich_text')||'(Sin nombre)';
+      const firstName=notionProp(c,'Name','title')||'';
+      const lastName=notionProp(c,'Last Name','rich_text')||'';
+      const fullName=notionProp(c,'Full Name','rich_text')||'';
+      const name=fullName||(firstName&&lastName?firstName+' '+lastName:firstName||lastName||'(Sin nombre)');
+      const createdAt=c.created_time?c.created_time.split('T')[0]:'';
       const company=notionProp(c,'Company','rich_text');
       const position=notionProp(c,'Position','rich_text');
       const email=notionProp(c,'Email','email');
@@ -815,6 +821,7 @@ function renderCRM(){
         '<div style="font-size:13px;font-weight:700;margin-bottom:2px">'+name+'</div>'+
         (position?'<div style="font-size:11px;color:#9ca3af">'+position+'</div>':'')+
         (company?'<div style="font-size:11px;color:#6b7280;margin-top:1px">'+company+'</div>':'')+
+        (createdAt?'<div style="font-size:10px;color:#9ca3af;margin-top:2px">'+fmtDate(createdAt)+'</div>':'')+
         '<div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap">'+
         (country?'<span style="font-size:10px;color:#6b7280;background:#eeeef5;border-radius:4px;padding:1px 5px">'+country+'</span>':'')+
         (source?'<span style="font-size:10px;color:#f59e0b;background:#f59e0b18;border-radius:4px;padding:1px 5px;border:1px solid #f59e0b28">'+source.split(',')[0]+'</span>':'')+
@@ -1488,10 +1495,12 @@ function renderLeads(){
       const own=c.properties['Responsable']&&c.properties['Responsable'].select?c.properties['Responsable'].select.name:'';
       if(own!==leadsFilterOwner) return false;
     }
-    if(leadsFilterNoFW){
-      const svcs=(c.properties['Servicio de Interes']&&c.properties['Servicio de Interes'].multi_select||[]).map(function(x){ return x.name; });
-      if(svcs.includes('Fintech Week')) return false;
-    }
+    // Exclude leads older than 90 days
+    if(!isLeadWithin90Days(c)) return false;
+    // Fintech Week / Proyectos filter
+    const svcs=(c.properties['Servicio de Interes']&&c.properties['Servicio de Interes'].multi_select||[]).map(function(x){ return x.name; });
+    if(leadsViewMode==='fintech'&&!svcs.includes('Fintech Week')) return false;
+    if(leadsViewMode==='proyectos'&&svcs.includes('Fintech Week')&&svcs.length===1) return false;
     return true;
   });
 
@@ -1499,7 +1508,7 @@ function renderLeads(){
   const byStage={};
   LEAD_STAGES.forEach(function(s){ byStage[s]=[]; });
   filtered.forEach(function(c){
-    const stage=c.properties['Lead Stage']&&c.properties['Lead Stage'].select?c.properties['Lead Stage'].select.name:'Nuevo';
+    const stage=getLeadStage(c);
     if(!byStage[stage]) byStage['Nuevo'].push(c);
     else byStage[stage].push(c);
   });
@@ -1523,8 +1532,11 @@ function renderLeads(){
     }).join('')+
     '</div>'+
     '<div style="display:flex;gap:6px">'+
-    '<button onclick="leadsFilterNoFW=false;render()" style="background:'+(leadsFilterNoFW?'#f0f0f5':'#6366f1')+';border:1px solid '+(leadsFilterNoFW?'#e2e2ec':'#6366f1')+';border-radius:20px;color:'+(leadsFilterNoFW?'#6b7280':'#fff')+';font-size:11px;font-weight:600;padding:4px 12px;cursor:pointer;font-family:inherit">Con Fintech Week</button>'+
-    '<button onclick="leadsFilterNoFW=true;render()" style="background:'+(leadsFilterNoFW?'#6366f1':'#f0f0f5')+';border:1px solid '+(leadsFilterNoFW?'#6366f1':'#e2e2ec')+';border-radius:20px;color:'+(leadsFilterNoFW?'#fff':'#6b7280')+';font-size:11px;font-weight:600;padding:4px 12px;cursor:pointer;font-family:inherit">Sin Fintech Week</button>'+
+    ['all','fintech','proyectos'].map(function(mode){
+      var labels={'all':'Todos','fintech':'Fintech Week','proyectos':'Proyectos'};
+      var active=leadsViewMode===mode;
+      return '<button onclick="leadsViewMode=\''+mode+'\';render()" style="background:'+(active?'#6366f1':'#f0f0f5')+';border:1px solid '+(active?'#6366f1':'#e2e2ec')+';border-radius:20px;color:'+(active?'#fff':'#6b7280')+';font-size:11px;font-weight:600;padding:4px 12px;cursor:pointer;font-family:inherit">'+labels[mode]+'</button>';
+    }).join('')+
     '</div>'+
     '</div>'+
 
@@ -1561,19 +1573,23 @@ function renderLeads(){
         '</div>'+
         '<div style="display:flex;flex-direction:column;gap:7px">'+
         cards.map(function(c){
-          const name=notionProp(c,'Name','title')||'(Sin nombre)';
+          const name=getLeadFullName(c);
           const company=notionProp(c,'Company','rich_text');
           const country=notionProp(c,'Country','rich_text');
           const source=notionProp(c,'Lead Source','multi_select');
           const services=(c.properties['Servicio de Interes']&&c.properties['Servicio de Interes'].multi_select||[]).map(function(x){ return x.name; });
           const owner=c.properties['Responsable']&&c.properties['Responsable'].select?c.properties['Responsable'].select.name:'';
           const oc=LEAD_OWNER_COLORS[owner]||'';
+          const createdDate=getLeadCreatedDate(c);
+          const leadDate=parseLeadDate(c);
+          const leadDateStr=leadDate?leadDate.toISOString().split('T')[0]:'';
           return '<div class="lead-card" draggable="true" data-lid="'+c.id+'" '+
             'ondragstart="dragLead(event)" '+
             'onclick="openLeadByEl(this)" '+
             'style="background:#fff;border:1px solid #e2e2ec;border-radius:8px;padding:10px;cursor:pointer">'+
             '<div style="font-size:12px;font-weight:700;margin-bottom:1px;color:#1a1a2e">'+name+'</div>'+
-            (company?'<div style="font-size:11px;color:#6b7280;margin-bottom:5px">'+company+'</div>':'')+
+            (company?'<div style="font-size:11px;color:#6b7280;margin-bottom:2px">'+company+'</div>':'')+
+            (leadDateStr?'<div style="font-size:10px;color:#9ca3af;margin-bottom:4px">'+fmtDate(leadDateStr)+'</div>':'')+
             (function(){ var own=owner; var cat=c.properties['Categoría']&&c.properties['Categoría'].select?c.properties['Categoría'].select.name:''; var oc2=LEAD_CAT_COLORS[cat]||''; return (own?'<span style="font-size:10px;background:'+oc+'20;color:'+oc+';border-radius:4px;padding:1px 6px;font-weight:700;margin-right:3px">'+own+'</span>':'')+(cat?'<span style="font-size:10px;background:'+oc2+'20;color:'+oc2+';border-radius:4px;padding:1px 6px;font-weight:800;border:1px solid '+oc2+'40">'+cat+'</span>':''); })()+
             '<div style="margin-bottom:4px"></div>'+
             '<div style="display:flex;gap:3px;flex-wrap:wrap">'+
@@ -1611,6 +1627,59 @@ function stageFromSelect(sel){
   var id=sel.dataset.lid;
   var stage=sel.value;
   if(id&&stage) updateLeadStage(id,stage);
+}
+
+function parseLeadDate(c){
+  // Try Days Since Created (date field)
+  var d1=null;
+  var dsc=c.properties['Days Since Created'];
+  if(dsc&&dsc.date&&dsc.date.start){
+    d1=new Date(dsc.date.start);
+  }
+  // Try Info detectada en correo (text, format YYYY-DD/MM at start)
+  var d2=null;
+  var info=c.properties['Info detectada en correo'];
+  if(info&&info.rich_text&&info.rich_text[0]){
+    var txt=info.rich_text[0].plain_text||'';
+    var match=txt.match(/^(\d{4})-(\d{2})\/(\d{2})/);
+    if(match){
+      // format is YYYY-DD/MM
+      d2=new Date(parseInt(match[1]),parseInt(match[3])-1,parseInt(match[2]));
+    }
+  }
+  // Return most recent
+  if(d1&&d2) return d1>d2?d1:d2;
+  if(d1) return d1;
+  if(d2) return d2;
+  return null;
+}
+
+function isLeadWithin90Days(c){
+  var d=parseLeadDate(c);
+  if(!d) return true; // No date = include as Nuevo
+  var days=(Date.now()-d.getTime())/(1000*60*60*24);
+  return days<=90;
+}
+
+function getLeadStage(c){
+  if(c.properties['Lead Stage']&&c.properties['Lead Stage'].select&&c.properties['Lead Stage'].select.name)
+    return c.properties['Lead Stage'].select.name;
+  // Lead Status removed - unified into Lead Stage
+  return 'Nuevo';
+}
+
+function getLeadFullName(c){
+  const firstName=notionProp(c,'Name','title')||'';
+  const lastName=notionProp(c,'Last Name','rich_text')||'';
+  const fullName=notionProp(c,'Full Name','rich_text')||'';
+  if(fullName) return fullName;
+  if(firstName&&lastName) return firstName+' '+lastName;
+  return firstName||lastName||'(Sin nombre)';
+}
+
+function getLeadCreatedDate(c){
+  if(c.created_time) return c.created_time.split('T')[0];
+  return '';
 }
 
 function openLeadInAgent(){
@@ -1656,7 +1725,9 @@ function openLeadDetail(id){
   if(!c) return;
   window._currentLeadUrl=c.url;
   window._currentLeadId=id;
-  const name=notionProp(c,'Name','title')||'(Sin nombre)';
+  const firstName=notionProp(c,'Name','title')||'';
+  const lastName=notionProp(c,'Last Name','rich_text')||'';
+  const name=getLeadFullName(c);
   const company=notionProp(c,'Company','rich_text');
   const position=notionProp(c,'Position','rich_text');
   const email=notionProp(c,'Email','email');
@@ -1665,7 +1736,8 @@ function openLeadDetail(id){
   const source=notionProp(c,'Lead Source','multi_select');
   const interest=notionProp(c,'Country of Interest','multi_select');
   const notes=notionProp(c,'Notes','rich_text');
-  const stage=c.properties['Lead Stage']&&c.properties['Lead Stage'].select?c.properties['Lead Stage'].select.name:'Nuevo';
+  const createdDate=getLeadCreatedDate(c);
+  const stage=getLeadStage(c);
   const stageColor=LEAD_STAGE_COLORS[stage]||'#6366f1';
   const services=(c.properties['Servicio de Interes']&&c.properties['Servicio de Interes'].multi_select||[]).map(function(x){ return x.name; });
   window._currentLeadCompany=company||'';
@@ -1694,8 +1766,12 @@ function openLeadDetail(id){
     '<button class="close-btn" onclick="closeModal()">&#x00D7;</button>'+
     '</div></div>'+
     '<div class="grid2" style="margin-bottom:12px">'+
-    '<div class="field"><label>Nombre</label><input id="ld-name" class="inp" value="'+name+'"></div>'+
+    '<div class="field"><label>Nombre</label><input id="ld-name" class="inp" value="'+firstName+'"></div>'+
+    '<div class="field"><label>Apellido</label><input id="ld-lastname" class="inp" value="'+lastName+'"></div>'+
+    '</div>'+
+    '<div class="grid2" style="margin-bottom:12px">'+
     '<div class="field"><label>Empresa</label><input id="ld-company" class="inp" value="'+(company||'')+'"></div>'+
+    (createdDate?'<div class="field"><label>Fecha de creación</label><div style="font-size:13px;padding:8px 10px;background:#f8f8fc;border:1px solid #e2e2ec;border-radius:7px;color:#6b7280">'+fmtDate(createdDate)+'</div></div>':'')+
     '</div>'+
     '<div class="grid2" style="margin-bottom:12px">'+
     '<div class="field"><label>Cargo</label><input id="ld-position" class="inp" value="'+(position||'')+'"></div>'+
@@ -1844,11 +1920,13 @@ async function updateLeadService(notionId,services){
 
 async function saveLeadDetail(notionId){
   const nm=document.getElementById('ld-name')?.value.trim()||'';
+  const lnm=document.getElementById('ld-lastname')?.value.trim()||'';
   if(!nm){ toast('El nombre es obligatorio','#ef4444'); return; }
+  const fullNm=(nm+(lnm?' '+lnm:'')).trim();
   const props={
-    'Name':{title:[{text:{content:nm.split(' ')[0]}}]},
-    'Full Name':{rich_text:[{text:{content:nm}}]},
-    'Last Name':{rich_text:[{text:{content:nm.split(' ').slice(1).join(' ')}}]},
+    'Name':{title:[{text:{content:nm}}]},
+    'Full Name':{rich_text:[{text:{content:fullNm}}]},
+    'Last Name':{rich_text:[{text:{content:lnm}}]},
     'Company':{rich_text:[{text:{content:document.getElementById('ld-company')?.value||''}}]},
     'Position':{rich_text:[{text:{content:document.getElementById('ld-position')?.value||''}}]},
     'Country':{rich_text:[{text:{content:document.getElementById('ld-country')?.value||''}}]},
@@ -1936,6 +2014,8 @@ async function init(){
   loadLeads();
 }
 init();
+
+
 
 
 
