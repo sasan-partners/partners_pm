@@ -122,6 +122,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:none}
 
 
 
+
 const SUPABASE_URL = 'https://phjiuommgudbwywuumvs.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Oq_4uJ9TVFv6LkQe6Dirdg_P7bUWImT';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1955,74 +1956,111 @@ async function saveLeadDetail(notionId){
 }
 
 function openAddLeadModal(){
+  _newLeadServices=[];
+  _newLeadCat='';
+  _newLeadOwner='';
   const mc=document.getElementById('modal-container');
   mc.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()">'+
-    '<div class="modal">'+
-    '<div class="modal-title"><h3>Nuevo lead</h3><button class="close-btn" onclick="closeModal()">×</button></div>'+
-    '<div class="grid2"><div class="field"><label>Nombre *</label><input id="nl-name" class="inp" autofocus placeholder="Juan García"></div>'+
-    '<div class="field"><label>Empresa</label><input id="nl-company" class="inp" placeholder="Banco XYZ"></div></div>'+
-    '<div class="grid2"><div class="field"><label>Cargo</label><input id="nl-position" class="inp" placeholder="CEO"></div>'+
-    '<div class="field"><label>País</label><input id="nl-country" class="inp" placeholder="Argentina"></div></div>'+
+    '<div class="modal" style="width:560px;max-height:90vh;overflow-y:auto">'+
+    '<div class="modal-title"><h3>Nuevo lead</h3><button class="close-btn" onclick="closeModal()">&#x00D7;</button></div>'+
+
+    '<div class="grid2"><div class="field"><label>Nombre *</label><input id="nl-name" class="inp" autofocus placeholder="Juan"></div>'+
+    '<div class="field"><label>Apellido</label><input id="nl-lastname" class="inp" placeholder="García"></div></div>'+
+
+    '<div class="grid2"><div class="field"><label>Empresa</label><input id="nl-company" class="inp" placeholder="Banco XYZ"></div>'+
+    '<div class="field"><label>Cargo</label><input id="nl-position" class="inp" placeholder="CEO"></div></div>'+
+
+    '<div class="grid2"><div class="field"><label>País</label><input id="nl-country" class="inp" placeholder="Argentina"></div>'+
+    '<div class="field"><label>Fecha</label><input type="date" id="nl-date" class="inp" value="'+today()+'"></div></div>'+
+
     '<div class="grid2"><div class="field"><label>Email</label><input id="nl-email" class="inp" type="email"></div>'+
     '<div class="field"><label>Teléfono</label><input id="nl-phone" class="inp"></div></div>'+
+
     '<div class="field"><label>Etapa</label><select id="nl-stage" class="inp">'+
     LEAD_STAGES.map(function(s){ return '<option>'+s+'</option>'; }).join('')+
     '</select></div>'+
-    '<div class="field"><label>Categoría</label>'+
-    '<div style="display:flex;gap:8px;margin-top:4px">'+
+
+    '<div style="margin-bottom:14px"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Categoría</div>'+
+    '<div style="display:flex;gap:8px">'+
     ['A','B','C'].map(function(cat){ var cc=LEAD_CAT_COLORS[cat]; return '<button type="button" id="nl-cat-'+cat+'" onclick="pickNewCat(\''+cat+'\')" style="background:#f0f0f5;border:1px solid #e2e2ec;border-radius:20px;color:#6b7280;font-size:12px;font-weight:800;padding:4px 16px;cursor:pointer;font-family:inherit" data-color="'+cc+'">'+cat+'</button>'; }).join('')+
     '</div></div>'+
+
+    '<div style="margin-bottom:14px"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Servicio de Interés</div>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+    LEAD_SERVICES.map(function(sv){ return '<button type="button" id="nl-svc-'+encodeURIComponent(sv)+'" onclick="toggleNewLeadSvc(this)" style="background:#f0f0f5;border:1px solid #e2e2ec;border-radius:20px;color:#6b7280;font-size:11px;font-weight:600;padding:4px 12px;cursor:pointer;font-family:inherit">'+sv+'</button>'; }).join('')+
+    '</div></div>'+
+
+    '<div style="margin-bottom:14px"><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Responsable</div>'+
+    '<div style="display:flex;gap:8px">'+
+    USERS.map(function(u){ var oc=LEAD_OWNER_COLORS[u]||'#6b7280'; return '<button type="button" id="nl-owner-'+u+'" onclick="pickNewOwner(\''+u+'\')" style="background:#f0f0f5;border:1px solid #e2e2ec;border-radius:20px;color:#6b7280;font-size:11px;font-weight:700;padding:4px 14px;cursor:pointer;font-family:inherit" data-color="'+oc+'">'+u+'</button>'; }).join('')+
+    '</div></div>'+
+
     '<div class="field"><label>Fuente</label><input id="nl-source" class="inp" placeholder="Evento, referido, LinkedIn..."></div>'+
     '<div class="field"><label>Notas</label><textarea id="nl-notes" class="inp" style="height:64px;resize:none"></textarea></div>'+
+
     '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">'+
     '<button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>'+
     '<button class="btn btn-primary" onclick="saveNewLead()">Crear en Notion</button>'+
     '</div></div></div>';
 }
 
+let _newLeadOwner='';
+function pickNewOwner(owner){
+  _newLeadOwner=owner;
+  USERS.forEach(function(u){
+    var btn=document.getElementById('nl-owner-'+u);
+    if(!btn) return;
+    var oc=LEAD_OWNER_COLORS[u]||'#6b7280';
+    var active=u===owner;
+    btn.style.background=active?oc:'#f0f0f5';
+    btn.style.borderColor=active?oc:'#e2e2ec';
+    btn.style.color=active?'#fff':'#6b7280';
+  });
+}
+
 async function saveNewLead(){
   const name=document.getElementById('nl-name')?.value.trim();
-  if(!name) return;
+  if(!name){ toast('El nombre es obligatorio','#ef4444'); return; }
+  const lastname=document.getElementById('nl-lastname')?.value.trim()||'';
+  const fullname=(name+(lastname?' '+lastname:'')).trim();
+  const dateVal=document.getElementById('nl-date')?.value||today();
+
   const properties={
     'Name':{title:[{text:{content:name}}]},
+    'Last Name':{rich_text:[{text:{content:lastname}}]},
+    'Full Name':{rich_text:[{text:{content:fullname}}]},
     'Company':{rich_text:[{text:{content:document.getElementById('nl-company')?.value||''}}]},
     'Position':{rich_text:[{text:{content:document.getElementById('nl-position')?.value||''}}]},
     'Country':{rich_text:[{text:{content:document.getElementById('nl-country')?.value||''}}]},
-    'Email':{email:document.getElementById('nl-email')?.value||null},
-    'Phone':{phone_number:document.getElementById('nl-phone')?.value||null},
     'Lead Stage':{select:{name:document.getElementById('nl-stage')?.value||'Nuevo'}},
-    'Lead Source':{multi_select:[{name:document.getElementById('nl-source')?.value||''}].filter(function(x){return x.name;})},
+    'Days Since Created':{date:{start:dateVal}},
     'Notes':{rich_text:[{text:{content:document.getElementById('nl-notes')?.value||''}}]},
   };
+  const em=document.getElementById('nl-email')?.value;
+  if(em) properties['Email']={email:em};
+  const ph=document.getElementById('nl-phone')?.value;
+  if(ph) properties['Phone']={phone_number:ph};
+  const src=document.getElementById('nl-source')?.value;
+  if(src) properties['Lead Source']={multi_select:[{name:src.split(',')[0].trim()}]};
+  if(_newLeadServices.length) properties['Servicio de Interes']={multi_select:_newLeadServices.map(function(s){ return {name:s}; })};
   if(_newLeadCat) properties['Categoría']={select:{name:_newLeadCat}};
-  _newLeadCat='';
+  if(_newLeadOwner) properties['Responsable']={select:{name:_newLeadOwner}};
+
   closeModal();
   try {
     const res=await fetch(PROXY+'/notion/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({properties:properties})});
     const data=await res.json();
-    if(data.id){ toast('Lead creado en Notion'); await loadLeads(); }
-    else toast('Error al crear lead','#ef4444');
+    if(data.id){
+      toast('Lead creado en Notion');
+      _newLeadServices=[];
+      _newLeadCat='';
+      _newLeadOwner='';
+      await loadLeads(true);
+    } else {
+      toast('Error al crear lead: '+(data.message||JSON.stringify(data)),'#ef4444');
+    }
   } catch(e){ toast('Error: '+e.message,'#ef4444'); }
 }
-
-async function init(){
-  // Cargar datos base primero para mostrar la app lo antes posible
-  await loadAll();
-  document.getElementById('loading').style.display='none';
-  render();
-  // Cargar leads en segundo plano sin bloquear la UI
-  loadLeads();
-}
-init();
-
-
-
-
-
-
-
-
-
 
 
 
