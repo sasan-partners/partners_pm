@@ -123,6 +123,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:none}
 
 
 
+
+
 const SUPABASE_URL = 'https://phjiuommgudbwywuumvs.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Oq_4uJ9TVFv6LkQe6Dirdg_P7bUWImT';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -2018,6 +2020,22 @@ function pickNewOwner(owner){
   });
 }
 
+function toggleNewLeadSvc(btn){
+  var sv=btn.textContent.trim();
+  var idx=_newLeadServices.indexOf(sv);
+  if(idx>=0){ _newLeadServices.splice(idx,1); } else { _newLeadServices.push(sv); }
+  LEAD_SERVICES.forEach(function(s){
+    var b=document.getElementById('nl-svc-'+encodeURIComponent(s));
+    if(!b) return;
+    var active=_newLeadServices.includes(s);
+    var sc=LEAD_SERVICE_COLORS[s]||'#6b7280';
+    b.style.background=active?sc:'#f0f0f5';
+    b.style.borderColor=active?sc:'#e2e2ec';
+    b.style.color=active?'#fff':'#6b7280';
+  });
+}
+
+
 async function saveNewLead(){
   const name=document.getElementById('nl-name')?.value.trim();
   if(!name){ toast('El nombre es obligatorio','#ef4444'); return; }
@@ -2062,7 +2080,15 @@ async function saveNewLead(){
   } catch(e){ toast('Error: '+e.message,'#ef4444'); }
 }
 
-
+async function init(){
+  // Cargar datos base primero para mostrar la app lo antes posible
+  await loadAll();
+  document.getElementById('loading').style.display='none';
+  render();
+  // Cargar leads en segundo plano sin bloquear la UI
+  loadLeads();
+}
+init();
 
 </script>
 </body>
