@@ -395,12 +395,49 @@ function renderDashboard(){
     '</div></div></div>';
 }
 
+function isProposed(p){ return (p.description||'').indexOf('🟡')===0; }
+async function approveProject(id){
+  const p=state.projects.find(function(x){ return x.id===id; }); if(!p) return;
+  await dbUpdateProject(id,{status:'ejecución',description:(p.description||'').replace(/^🟡 Propuesto automáticamente — /,'')});
+}
+async function discardProject(id){
+  if(!confirm('¿Descartar este proyecto? Las reuniones y tareas quedan sin proyecto.')) return;
+  await sb.from('tasks').update({project_id:null}).eq('project_id',id);
+  await sb.from('meetings').update({project_id:null}).eq('project_id',id);
+  const {error}=await sb.from('projects').delete().eq('id',id);
+  if(error){ toast('Error al descartar','#ef4444'); return; }
+  state.projects=state.projects.filter(function(p){ return p.id!==id; });
+  state.tasks.forEach(function(t){ if(t.project_id===id) t.project_id=null; });
+  state.meetings.forEach(function(m){ if(m.project_id===id) m.project_id=null; });
+  render(); toast('Proyecto descartado');
+}
 function renderProjects(){
   let html='<div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">'+
     '<h2 style="font-size:20px;font-weight:900;margin:0;letter-spacing:-.03em">Proyectos</h2>'+
     '<button class="btn btn-primary" onclick="openProjectModal()">+ Nuevo proyecto</button></div>';
+  const propuestos=state.projects.filter(isProposed);
+  if(propuestos.length){
+    html+='<div style="margin-bottom:28px;background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:16px">'+
+      '<div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#b45309;margin-bottom:4px">🟡 En revisión · '+propuestos.length+'</div>'+
+      '<div style="font-size:12px;color:#92400e;margin-bottom:12px">Proyectos detectados automáticamente en reuniones. Aprobalos para que pasen a Ejecución, o descartalos (las reuniones y tareas quedan sin proyecto, no se borran).</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">'+
+      propuestos.map(function(p){
+        const nm=state.meetings.filter(function(m){ return m.project_id===p.id; }).length;
+        const nt=state.tasks.filter(function(t){ return t.project_id===p.id&&t.status!=='completada'; }).length;
+        return '<div style="background:#fff;border:1px solid #fde68a;border-radius:10px;padding:14px;color:#1a1a2e">'+
+          '<div style="font-size:15px;font-weight:800;margin-bottom:2px">'+p.name+'</div>'+
+          (p.client?'<div style="font-size:11px;color:#4b5563">Cliente: '+p.client+(p.country?' · '+p.country:'')+'</div>':'')+
+          '<div style="font-size:12px;color:#4b5563;margin:8px 0;line-height:1.5">'+(p.description||'').replace('🟡 Propuesto automáticamente — ','')+'</div>'+
+          '<div style="font-size:11px;color:#6b7280;margin-bottom:10px">'+nm+' reuniones · '+nt+' tareas abiertas · Responsable: '+p.responsible+'</div>'+
+          '<div style="display:flex;gap:6px">'+
+          '<button class="btn btn-primary btn-sm" onclick="approveProject(\''+p.id+'\')">Aprobar</button>'+
+          '<button class="btn btn-secondary btn-sm" onclick="openEditProjectModal(\''+p.id+'\')">Editar</button>'+
+          '<button class="btn btn-secondary btn-sm" style="color:#ef4444" onclick="discardProject(\''+p.id+'\')">Descartar</button>'+
+          '</div></div>';
+      }).join('')+'</div></div>';
+  }
   STATUSES.forEach(function(status){
-    const ps=state.projects.filter(function(p){ return p.status===status; });
+    const ps=state.projects.filter(function(p){ return p.status===status&&!isProposed(p); });
     if(!ps.length) return;
     html+='<div style="margin-bottom:28px">'+
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">'+
@@ -412,14 +449,15 @@ function renderProjects(){
         const dn=pt.filter(function(t){ return t.status==='completada'; }).length;
         const pnd=pt.filter(function(t){ return t.status!=='completada'; }).length;
         const isSel=selProject===p.id;
-        return '<div onclick="toggleProject(\''+p.id+'\')" style="background:'+(isSel?'#6366f10c':'#0c0c18')+';border:1px solid '+(isSel?'#6366f150':'#1a1a2e')+';border-radius:11px;padding:16px;cursor:pointer;transition:all .2s">'+
+        return '<div onclick="toggleProject(\''+p.id+'\')" style="background:'+(isSel?'#eef0ff':'#ffffff')+';border:1px solid '+(isSel?'#6366f1':'#e2e2ec')+';border-radius:11px;padding:16px;cursor:pointer;transition:all .2s;color:#1a1a2e;box-shadow:0 1px 2px rgba(0,0,0,.04)">'+
           '<div style="display:flex;justify-content:space-between;margin-bottom:10px">'+chip(status,STATUS_COLORS[status])+
           '<div style="display:flex;gap:5px;align-items:center">'+
           '<button onclick="event.stopPropagation();openEditProjectModal(\''+p.id+'\')" style="background:#eeeef5;border:1px solid #dcdcec;border-radius:4px;color:#6b7280;font-size:10px;padding:2px 7px;cursor:pointer">&#x270F;</button>'+
           '<button onclick="event.stopPropagation();if(confirm(\'Eliminar proyecto y sus tareas?\'))dbDeleteProject(\''+p.id+'\')" style="background:#ef444415;border:1px solid #ef444430;border-radius:4px;color:#ef4444;font-size:10px;padding:2px 7px;cursor:pointer">&#x2715;</button>'+
           av(p.responsible,24)+'</div></div>'+
-          '<div style="font-size:14px;font-weight:800;margin-bottom:4px;letter-spacing:-.02em">'+p.name+'</div>'+
-          '<div style="font-size:11px;color:#6b7280;margin-bottom:10px;line-height:1.5">'+(p.description||'')+'</div>'+
+          '<div style="font-size:15px;font-weight:800;margin-bottom:4px;letter-spacing:-.02em;color:#1a1a2e">'+p.name+'</div>'+
+          (p.client&&p.client!==p.name?'<div style="font-size:11px;color:#4b5563;margin-bottom:4px">Cliente: '+p.client+'</div>':'')+
+          '<div style="font-size:12px;color:#4b5563;margin-bottom:10px;line-height:1.5">'+(p.description||'')+'</div>'+
           '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">'+
           pill(p.country)+
           (p.pm&&p.pm!==p.responsible?pill('PM: '+p.pm.split(' ')[0],'#38bdf8'):'')+
