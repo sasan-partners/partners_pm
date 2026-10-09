@@ -345,6 +345,87 @@ function taskCardHTML(t,compact){
     '</div></div>';
 }
 
+
+// ─── Carga y productividad de socios ─────────────────────────────────────────
+const PARTNERS = ['Sasan','Jorge','Juan'];
+const PARTNER_CHART_COLORS = {Sasan:'#4f46e5',Jorge:'#0284c7',Juan:'#059669'}; // validado: CVD y contraste OK
+const PRIORITY_WEIGHT = {urgente:4,alta:3,media:2,baja:1};
+const OVERDUE_FACTOR = 1.5;    // una tarea vencida pesa 50% más en la carga
+const RESOLUTION_DAYS = 60;    // ventana para medir resolución
+
+function partnerStats(){
+  const today=new Date().toISOString().split('T')[0];
+  const since=new Date(Date.now()-RESOLUTION_DAYS*86400000).toISOString().split('T')[0];
+  return PARTNERS.map(function(u){
+    const mine=state.tasks.filter(function(t){ return t.assignee===u; });
+    const open=mine.filter(function(t){ return t.status!=='completada'; });
+    const overdue=open.filter(function(t){ return t.due_date&&t.due_date<today; });
+    const w=function(t){ return PRIORITY_WEIGHT[t.priority]||2; };
+    const load=open.reduce(function(s,t){ return s+w(t)*((t.due_date&&t.due_date<today)?OVERDUE_FACTOR:1); },0);
+    const recent=mine.filter(function(t){ return String(t.created_at||'').slice(0,10)>=since; });
+    const recentDone=recent.filter(function(t){ return t.status==='completada'; });
+    const wDone=recentDone.reduce(function(s,t){ return s+w(t); },0);
+    const wAll=recent.reduce(function(s,t){ return s+w(t); },0);
+    const resolution=wAll?wDone/wAll:null;                       // % del trabajo nuevo (ponderado) que ya cerró
+    const onTime=open.length?1-overdue.length/open.length:1;     // % de lo abierto que no está vencido
+    const score=Math.round(100*(0.6*(resolution==null?0.5:resolution)+0.4*onTime));
+    return {u:u,open:open.length,overdue:overdue.length,urgent:open.filter(function(t){ return t.priority==='urgente'; }).length,
+            load:load,recent:recent.length,recentDone:recentDone.length,resolution:resolution,onTime:onTime,score:score};
+  });
+}
+
+function donutSVG(rows,total){
+  const R=70,r=46,C=90; let a=-Math.PI/2; let paths='';
+  rows.forEach(function(s){
+    if(!s.load) return;
+    const frac=s.load/total, a2=a+frac*2*Math.PI, gap=rows.filter(function(x){return x.load;}).length>1?0.02:0;
+    const p=function(rad,ang){ return [C+rad*Math.cos(ang),C+rad*Math.sin(ang)]; };
+    const s0=a+gap/2, s1=a2-gap/2, large=(s1-s0)>Math.PI?1:0;
+    const [x1,y1]=p(R,s0),[x2,y2]=p(R,s1),[x3,y3]=p(r,s1),[x4,y4]=p(r,s0);
+    paths+='<path d="M'+x1+' '+y1+' A'+R+' '+R+' 0 '+large+' 1 '+x2+' '+y2+' L'+x3+' '+y3+' A'+r+' '+r+' 0 '+large+' 0 '+x4+' '+y4+' Z" fill="'+PARTNER_CHART_COLORS[s.u]+'" stroke="#fff" stroke-width="2"><title>'+s.u+': '+Math.round(frac*100)+'% de la carga ('+s.open+' tareas abiertas)</title></path>';
+    a=a2;
+  });
+  return '<svg viewBox="0 0 180 180" width="180" height="180" role="img" aria-label="Distribución de la carga ponderada entre socios">'+paths+
+    '<text x="90" y="86" text-anchor="middle" style="font-size:22px;font-weight:800;fill:#1a1a2e">'+Math.round(total)+'</text>'+
+    '<text x="90" y="104" text-anchor="middle" style="font-size:10px;fill:#6b7280">puntos de carga</text></svg>';
+}
+
+function renderPartnerStats(){
+  const rows=partnerStats();
+  const total=rows.reduce(function(s,r){ return s+r.load; },0);
+  if(!total) return '';
+  const pct=function(x){ return x==null?'—':Math.round(x*100)+'%'; };
+  const meter=function(v,color){ return '<div style="height:6px;background:#eef0f4;border-radius:4px;overflow:hidden;min-width:60px"><div style="height:100%;width:'+Math.max(2,Math.min(100,v))+'%;background:'+color+';border-radius:4px"></div></div>'; };
+  return '<div style="background:#fff;border:1px solid #e2e2ec;border-radius:12px;padding:18px;margin-bottom:24px;color:#1a1a2e">'+
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;flex-wrap:wrap;gap:6px">'+
+    '<div style="font-size:14px;font-weight:800">Carga y productividad de socios</div>'+
+    '<details style="font-size:11px;color:#6b7280"><summary style="cursor:pointer">¿Cómo se calcula?</summary><div style="max-width:420px;line-height:1.6;margin-top:6px">'+
+    '<b>Carga</b>: suma de tareas abiertas por peso de prioridad (urgente 4 · alta 3 · media 2 · baja 1). Si está vencida, vale ×1,5. La torta muestra qué parte de la carga total tiene cada socio.<br>'+
+    '<b>Resolución</b>: de las tareas creadas en los últimos '+RESOLUTION_DAYS+' días, qué % del peso ya se completó.<br>'+
+    '<b>Al día</b>: % de las tareas abiertas que no están vencidas.<br>'+
+    '<b>Score</b>: 60% resolución + 40% al día (0 a 100).</div></details></div>'+
+    '<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">'+
+    '<div style="display:flex;align-items:center;gap:14px">'+donutSVG(rows,total)+
+    '<div style="display:flex;flex-direction:column;gap:8px">'+rows.map(function(s){
+      return '<div style="display:flex;align-items:center;gap:8px;font-size:13px"><span style="width:10px;height:10px;border-radius:3px;background:'+PARTNER_CHART_COLORS[s.u]+'"></span><b>'+s.u+'</b><span style="color:#4b5563">'+Math.round(s.load/total*100)+'%</span></div>';
+    }).join('')+'</div></div>'+
+    '<div style="flex:1;min-width:320px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">'+
+    '<thead><tr style="color:#6b7280;text-align:left">'+['Socio','Abiertas','Urgentes','Vencidas','Carga','Resolución '+RESOLUTION_DAYS+'d','Al día','Score'].map(function(hd){ return '<th style="font-weight:600;padding:6px 8px;border-bottom:1px solid #eef0f4;white-space:nowrap">'+hd+'</th>'; }).join('')+'</tr></thead><tbody>'+
+    rows.map(function(s){
+      const sc=s.score>=70?'#047857':s.score>=45?'#b45309':'#b91c1c';
+      return '<tr>'+
+        '<td style="padding:8px;border-bottom:1px solid #f3f4f6;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:'+PARTNER_CHART_COLORS[s.u]+';margin-right:6px"></span><b>'+s.u+'</b></td>'+
+        '<td style="padding:8px;border-bottom:1px solid #f3f4f6">'+s.open+'</td>'+
+        '<td style="padding:8px;border-bottom:1px solid #f3f4f6">'+s.urgent+'</td>'+
+        '<td style="padding:8px;border-bottom:1px solid #f3f4f6;color:'+(s.overdue?'#b91c1c':'#1a1a2e')+'">'+s.overdue+'</td>'+
+        '<td style="padding:8px;border-bottom:1px solid #f3f4f6" title="'+Math.round(s.load)+' puntos">'+Math.round(s.load/total*100)+'%</td>'+
+        '<td style="padding:8px;border-bottom:1px solid #f3f4f6" title="'+s.recentDone+' de '+s.recent+' tareas nuevas completadas">'+pct(s.resolution)+'</td>'+
+        '<td style="padding:8px;border-bottom:1px solid #f3f4f6">'+pct(s.onTime)+'</td>'+
+        '<td style="padding:8px;border-bottom:1px solid #f3f4f6"><div style="display:flex;align-items:center;gap:8px"><b style="color:'+sc+';min-width:24px">'+s.score+'</b>'+meter(s.score,PARTNER_CHART_COLORS[s.u])+'</div></td>'+
+        '</tr>';
+    }).join('')+'</tbody></table></div></div></div>';
+}
+
 function renderDashboard(){
   const myTasks=state.tasks.filter(function(t){ return t.assignee===currentUser&&t.status!=='completada'; });
   const overdue=myTasks.filter(function(t){ return t.due_date&&daysUntil(t.due_date)<0; });
@@ -361,6 +442,7 @@ function renderDashboard(){
     '<div class="stat"><div class="stat-value" style="color:#f87171">'+overdue.length+'</div><div class="stat-label">Vencidas</div></div>'+
     '<div class="stat"><div class="stat-value" style="color:#fbbf24">'+soon.length+'</div><div class="stat-label">Próximos 5 días</div></div>'+
     '</div>'+
+    renderPartnerStats()+
     '<div style="display:grid;grid-template-columns:3fr 2fr;gap:20px">'+
     '<div>'+
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
@@ -1491,11 +1573,14 @@ function bindEvents(){
   document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeModal(); },{once:true});
 }
 
-function toggleTask(id,currentStatus){
-  const newStatus=currentStatus==='completada'?'pendiente':'completada';
-  dbUpdateTask(id,{status:newStatus});
+function statusChange(id,status){
+  const t=state.tasks.find(function(x){ return x.id===id; });
+  const hist=(t&&Array.isArray(t.history)?t.history.slice():[]);
+  hist.push({status:status,at:new Date().toISOString(),by:currentUser});
+  dbUpdateTask(id,{status:status,history:hist});
 }
-function changeTaskStatus(id,status){ dbUpdateTask(id,{status:status}); }
+function toggleTask(id,currentStatus){ statusChange(id,currentStatus==='completada'?'pendiente':'completada'); }
+function changeTaskStatus(id,status){ statusChange(id,status); }
 function toggleProject(id){ selProject=selProject===id?null:id; render(); }
 function goToProject(id){ selProject=id; setView('projects'); }
 
