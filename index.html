@@ -26,6 +26,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:none}
 .user-btn.active-sasan{background:#818cf820;border-color:#818cf860;color:#818cf8}
 .user-btn.active-jorge{background:#38bdf820;border-color:#38bdf860;color:#38bdf8}
 .user-btn.active-juan{background:#34d39920;border-color:#34d39960;color:#34d399}
+.user-btn.active-sol{background:#f59e0b20;border-color:#f59e0b60;color:#f59e0b}
+.user-btn.active-natalia{background:#f472b620;border-color:#f472b660;color:#f472b6}
 #content{flex:1;padding:28px;max-width:1140px;margin:0 auto;width:100%}
 .card{background:#ffffff;border:1px solid #e2e2ec;border-radius:11px;padding:16px}
 .card-sm{background:#f8f8fc;border:1px solid #e8e8f0;border-radius:9px;padding:11px 14px}
@@ -104,6 +106,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:none}
     <button class="user-btn active-sasan" onclick="setUser('Sasan')">Sasan</button>
     <button class="user-btn" onclick="setUser('Jorge')">Jorge</button>
     <button class="user-btn" onclick="setUser('Juan')">Juan</button>
+    <button class="user-btn" onclick="setUser('Sol')">Sol</button>
+    <button class="user-btn" onclick="setUser('Natalia')">Natalia</button>
   </div>
 </div>
 <div id="content"></div>
@@ -157,12 +161,12 @@ let leadsFilterSource = '';
 let leadsFilterOwner = 'all';
 let leadsViewMode = 'all'; // 'all', 'fintech', 'proyectos'
 
-const USERS = ['Sasan','Jorge','Juan'];
+const USERS = ['Sasan','Jorge','Juan','Sol','Natalia'];
 const STATUSES = ['backlog','análisis','ejecución','terminado'];
 const PRIORITIES = ['urgente','alta','media','baja'];
 const TASK_STATUSES = ['pendiente','en progreso','bloqueada','completada'];
 const MEETING_TYPES = ['socios','pm','sme','cliente','externa'];
-const USER_COLORS = {Sasan:'#818cf8',Jorge:'#38bdf8',Juan:'#34d399'};
+const USER_COLORS = {Sasan:'#818cf8',Jorge:'#38bdf8',Juan:'#34d399',Sol:'#f59e0b',Natalia:'#f472b6'};
 const STATUS_COLORS = {backlog:'#6b7280',análisis:'#f59e0b',ejecución:'#6366f1',terminado:'#10b981'};
 const PRIORITY_COLORS = {urgente:'#ef4444',alta:'#f97316',media:'#eab308',baja:'#6b7280'};
 const TASK_STATUS_COLORS = {pendiente:'#6b7280','en progreso':'#6366f1',bloqueada:'#ef4444',completada:'#10b981'};
@@ -1025,7 +1029,7 @@ function buildContext(mode) {
 }
 
 function buildSystemPrompt(mode) {
-  const base = 'Sos el agente de +Partners, consultora de fintech e innovación bancaria en Iberoamérica. Socios: Sasan Maniei, Jorge Moreno, Juan Fornaguera.';
+  const base = 'Sos el agente de +Partners, consultora de fintech e innovación bancaria en Iberoamérica. Socios: Sasan Maniei, Jorge Moreno, Juan Fornaguera. Equipo: Sol Angeletti (PM) y Natalia Goos (SME). Fecha de hoy: '+new Date().toISOString().split('T')[0]+'.';
 
   if (mode === 'pm') {
     return base + `
@@ -1034,7 +1038,7 @@ Modo: GESTIÓN DE PROYECTOS
 Tu trabajo es ayudar a gestionar proyectos, tareas, deadlines y bloqueos.
 
 REGLAS:
-- Si hay tareas para crear en el input: {"modo":"tareas","resumen":"frase corta","tareas":[{"titulo":"...","responsable":"Sasan|Jorge|Juan","prioridad":"urgente|alta|media|baja","fechaVencimiento":"YYYY-MM-DD o null","notas":"..."}]}
+- Si hay tareas para crear en el input: {"modo":"tareas","resumen":"frase corta","tareas":[{"titulo":"...","responsable":"Sasan|Jorge|Juan|Sol|Natalia","prioridad":"urgente|alta|media|baja","fechaVencimiento":"YYYY-MM-DD o null","notas":"..."}]}
 - Si es pregunta o análisis: {"modo":"chat","respuesta":"tu respuesta. Formato: por proyecto, con estado, bloqueos y próximos pasos. Sé directo y accionable."}
 Español rioplatense, sin vueltas.`;
   }
@@ -1063,7 +1067,7 @@ Español rioplatense, enfocado en acciones comerciales.`;
 Modo: REUNIONES
 Tu trabajo es analizar reuniones, extraer decisiones, compromisos y tareas.
 
-Si hay notas para procesar: {"modo":"tareas","resumen":"...","decisiones":["..."],"tareas":[{"titulo":"...","responsable":"Sasan|Jorge|Juan","prioridad":"urgente|alta|media|baja","fechaVencimiento":"YYYY-MM-DD o null","notas":"..."}]}
+Si hay notas para procesar: {"modo":"tareas","resumen":"...","decisiones":["..."],"tareas":[{"titulo":"...","responsable":"Sasan|Jorge|Juan|Sol|Natalia","prioridad":"urgente|alta|media|baja","fechaVencimiento":"YYYY-MM-DD o null","notas":"..."}]}
 Si es pregunta: {"modo":"chat","respuesta":"análisis estructurado con: resumen / decisiones tomadas / compromisos / próximos pasos"}
 Español rioplatense.`;
   }
@@ -1074,7 +1078,7 @@ Español rioplatense.`;
 Modo: AUTO — detectá la intención del usuario y respondé con el contexto más relevante.
 
 REGLAS:
-- Si hay tareas: {"modo":"tareas","resumen":"...","tareas":[{"titulo":"...","responsable":"Sasan|Jorge|Juan","prioridad":"urgente|alta|media|baja","fechaVencimiento":"YYYY-MM-DD o null","notas":"..."}]}
+- Si hay tareas: {"modo":"tareas","resumen":"...","tareas":[{"titulo":"...","responsable":"Sasan|Jorge|Juan|Sol|Natalia","prioridad":"urgente|alta|media|baja","fechaVencimiento":"YYYY-MM-DD o null","notas":"..."}]}
 - Si es sobre leads/comercial: {"modo":"leads","analisis":"...","oportunidades":[...],"alertas":[...]}
 - Si es pregunta general: {"modo":"chat","respuesta":"respuesta directa y accionable"}
 Español rioplatense, informal pero profesional.`;
@@ -1111,7 +1115,7 @@ async function submitAgent(msg){
       const projId=agentProject||'';
       for(let i=0;i<result.tareas.length;i++){
         const t=result.tareas[i];
-        await dbAddTask({id:uid(),title:t.titulo,project_id:projId||null,assignee:USERS.includes(t.responsable)?t.responsable:currentUser,priority:PRIORITIES.includes(t.prioridad)?t.prioridad:'media',due_date:t.fechaVencimiento||null,notes:t.notas||'',status:'pendiente',created_at:new Date().toISOString()});
+        await dbAddTask({id:uid(),title:t.titulo,project_id:projId||null,assignee:USERS.includes(t.responsable)?t.responsable:currentUser,priority:PRIORITIES.includes(t.prioridad)?t.prioridad:'media',due_date:t.fechaVencimiento||new Date(Date.now()+7*86400000).toISOString().split('T')[0],notes:t.notas||'',status:'pendiente',created_at:new Date().toISOString()});
       }
       let summary='Creé '+result.tareas.length+' tarea'+(result.tareas.length>1?'s':'')+':\n'+result.tareas.map(function(t,i){ return (i+1)+'. '+t.titulo+' → '+t.responsable; }).join('\n');
       if(result.resumen) summary+='\n\n'+result.resumen;
